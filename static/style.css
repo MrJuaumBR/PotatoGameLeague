@@ -1,0 +1,30 @@
+html body{
+    font-size: 1em;
+    background-color: #1e2124;
+}
+
+h1 {
+    font-size: 3rem;
+}
+
+.page-title {
+    color: #7289da;
+    text-shadow: .5em .25em 1em rgb(169, 217, 221);
+    font-size: 3em;
+}
+
+.content{
+    border: none 0;
+    background-color: #282b30;
+    color: white;
+    width: 43em;
+}
+
+hr{
+    background-color: #7289da;
+}
+
+#navbar {
+    color: white;
+    font-size: 1em;
+}
