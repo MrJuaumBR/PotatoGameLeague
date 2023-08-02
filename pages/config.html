@@ -1,0 +1,14 @@
+{%extends 'base.html'%}{%block title%}Home{%endblock%}
+{%block content%}
+<h1><i class="fa-solid fa-gear"></i>Configurações</h1>
+<form method="POST">
+    <label for="highlight" class="form-label">Cor de sobreposição:</label><br>
+    <input class="form-control" style="background: none; border: none; width: 15em;" type="color" id="highlight" name="highlight" value="{{current_user.highlight_color}}"><br>
+    <label for="about" class="form-label">Sobre-mim:</label><br>
+    <div class="input-group">
+        <textarea class="form-control bg-dark text-white" aria-label="Sobre mim" name="about" id="about">{{current_user.aboutme}}</textarea>
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i>Salvar</button>
+</form>
+{%endblock%}

@@ -1,1 +1,33 @@
 {%extends 'base.html'%}{%block title%}Home{%endblock%}
+{%block content%}
+
+<div style="background-color: #fff; font-weight: bolder; border-radius: 1em;" id="userArea" onload="updatecolor()">
+    <style>
+        #userArea{
+            text-shadow: 0.25em 0.25em 0.1em black;
+        }
+    </style>
+    <br>
+    <div style="box-shadow: 0.25em 0.25em 0.1em black; margin-right: 1em; bottom: 1%;" class="bg-dark">
+        <br>
+        <img src="{{user.user['avatar_url']}}" width="64" height="64" style="border-radius: 25%;">
+        <h2>{{user.user['username']}}</h2>
+        <small style="font-size: 0.75em;">ID: {{user.user['id']}}</small><br>
+        <div style="border: 0.1em solid black; background-color: rgba(0,0,0,0.1); margin: 1em;">
+            <small>Sobre mim:</small><br>
+            <div style="text-align: center;">
+                {{user.aboutme}}
+            </div>
+        </div>
+        <br>
+    </div>
+    <br>
+</div>
+<script>
+    var d = document.getElementById('userArea');
+    function updatecolor(){
+        d.style.backgroundColor= "{{user.highlight_color}}";
+    }
+    updatecolor()
+</script>
+{%endblock%}
