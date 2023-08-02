@@ -67,7 +67,6 @@
             function ColorHighlight(){
                 var elements = document.getElementsByClassName('color-changeable');
                 for (var ele of elements){
-                    console.log("{{current_user.highlight_color}}");
                     ele.style.backgroundColor = "{{current_user.highlight_color}}";
                 };
             }

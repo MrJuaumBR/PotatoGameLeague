@@ -66,6 +66,15 @@ def config():
     if current_user and request.method == "POST":
         color = request.form.get("highlight")  # Highlight color
         about = request.form.get("about")  # About
+        urls = request.form.get('url_index') # get urls
+        urlsDict = {}
+        if int(urls) > 1:
+            for url in range(int(urls)):
+                x = {}
+                x['title'] = request.form.get('url-title'+str(url))
+                x['url'] = request.form.get('url-url'+str(url))
+                urlsDict[str(url)] = x
+
         if (about in ["",' ', None, "None"]) or len(about) < 3:
             about = "Olá!"
 
@@ -73,6 +82,7 @@ def config():
         # Update user
         current_user.highlight_color = color
         current_user.aboutme = about
+        current_user.links = urlsDict
         
         d.update('users',DB_USERS_TABLE_COLUMNS[1:],(str(current_user.__dict__),),current_user.id) # update in database
     return render_template("config.html", current_user=current_user)

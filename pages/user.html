@@ -1,7 +1,7 @@
 {%extends 'base.html'%}{%block title%}Home{%endblock%}
 {%block content%}
 
-<div style="background-color: #fff; font-weight: bolder; border-radius: 1em;" id="userArea" onload="updatecolor()">
+<div style="background-color: #fff; font-weight: bolder; border-radius: 1em;" id="userArea" class="OUserColor" onload="updatecolor()">
     <style>
         #userArea{
             text-shadow: 0.25em 0.25em 0.1em black;
@@ -19,14 +19,28 @@
                 {{user.aboutme}}
             </div>
         </div>
+        <div style="border: 0.1em solid black; background-color: rgba(0,0,0,0.1); margin: 1em;">
+            <small>Links deste Usuário:</small>
+            <ul style="color: #fff;">
+                {% for url in user.links.keys() %}
+                    <li><a class="OUserColor" href="{{user.links[url]['url']}}">{{user.links[url]['title']}}</a></li>
+                {%endfor%}
+            </ul>
+        </div>
         <br>
     </div>
     <br>
 </div>
 <script>
-    var d = document.getElementById('userArea');
     function updatecolor(){
-        d.style.backgroundColor= "{{user.highlight_color}}";
+        var xxx = document.getElementsByClassName('OUserColor');
+        for (var ele of xxx){
+            if (ele.tagName == "DIV"){
+                ele.style.backgroundColor = "{{user.highlight_color}}";
+            }else{
+                ele.style.color = "{{user.highlight_color}}";
+            }
+        };
     }
     updatecolor()
 </script>

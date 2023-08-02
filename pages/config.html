@@ -7,8 +7,85 @@
     <label for="about" class="form-label">Sobre-mim:</label><br>
     <div class="input-group">
         <textarea class="form-control bg-dark text-white" aria-label="Sobre mim" name="about" id="about">{{current_user.aboutme}}</textarea>
+    </div><br>
+    <label for="urls">Links:</label>
+    <div class="form-contro bg-dark" name="urls" id="urls">
+        <input type="number" id="url_index" name="url_index" hidden>
+        <small id="urls_enter">
+            {% for url in current_user.links.keys() %}
+                <div value="{{url}}" id="link{{url}}">
+                    <input type="text" style="margin: 0.1em; display: inline-block; width: 7em;" placeholder="Título do Link" class="form-control" name="url-title{{url}}" value="{{current_user.links[url]['title']}}">
+                    <input type="text" style="margin: 0.1em; display: inline-block; width: 6em;" placeholder="Link" class="form-control" name="url-title{{url}}" value="{{current_user.links[url]['url']}}">
+                    <span id="btnLink{{url}}" onclick="removeURL(this)" class="btn btn-secondary" style="background-color: red; margin: 0.1em;">Remover</span>
+                    <script>
+                        var btn = document.getElementById("btnLink{{url}}");
+                        btn.value = "{{url}}";
+                        document.getElementById("url_index").value = document.getElementById('urls_enter').childElementCount;
+                    </script>
+                    <hr>
+                </div>
+            {% endfor %}
+        </small>
+        <span class="btn btn-secondary" onclick="createInput()">Novo Link</span>
     </div>
     <br>
     <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i>Salvar</button>
+    <script>
+        function createInput(){
+            var index = document.getElementById('urls_enter').childElementCount;
+            if (index+1 <= 3){
+                var div = document.createElement('div');
+
+                var inp = document.createElement('input');// Title
+                inp.type = "text";
+                inp.name = "url-title"+index;
+                inp.className = "form-control";
+                inp.style.width = "7em";
+                inp.placeholder = "Título do Link";
+                inp.style.display = "inline-block";
+                inp.style.margin = "0.1em";
+                div.append(inp);
+
+                var inp = document.createElement('input');// URL
+                inp.type = "url";
+                inp.name = "url-url"+index;
+                inp.className = "form-control";
+                inp.style.width = "6em";
+                inp.placeholder = "Link";
+                inp.style.display = "inline-block";
+                inp.style.margin = "0.1em";
+                div.append(inp);
+                
+                var btn = document.createElement('span');
+                btn.className = "btn btn-secondary";
+                btn.style.backgroundColor = "red";
+                btn.innerText = "Remover";
+                btn.style.margin = "0.1em";
+                btn.onclick = function(){
+                    removeURL(index);
+                };
+                div.append(btn);
+
+                div.value = index;
+                btn.value = index;
+                div.id = "link" + index;
+                div.append(document.createElement('hr'));
+                document.getElementById('urls_enter').append(div);
+
+                UpdateReceiver();
+            }
+        }
+        function removeURL(value){
+            var x = document.getElementById('link'+String(value.value));
+            // Convert to List > Remove index > Convert to string
+            
+            x.remove();            
+            UpdateReceiver();
+        }
+
+        function UpdateReceiver(){
+            document.getElementById("url_index").value = document.getElementById('urls_enter').childElementCount;
+        }
+    </script>
 </form>
 {%endblock%}

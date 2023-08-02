@@ -3,6 +3,7 @@ from urllib import parse
 from zenora import APIClient
 from os import environ
 import sqlite3 as sql
+import json
 
 app = Flask(__name__, "/", "./static")
 app.template_folder = "pages"
@@ -20,7 +21,6 @@ REDIRECT_URL = str(SITE_URL) + "/oauth/callback"
 OAUTH_URL = f"https://discord.com/api/oauth2/authorize?client_id=1043495092977152061&redirect_uri={parse.quote(REDIRECT_URL)}&response_type=code&scope=identify%20email%20connections%20guilds"
 
 client = APIClient(TOKEN, client_secret=CLIENT_SECRET)
-
 
 class dataManager:
     def __init__(self) -> None:
@@ -70,7 +70,6 @@ class dataManager:
                     n += f"{x} = {v}"
                 else:
                     n += f"{x} = {v}, "
-        print(columns, values)
         return str(n)
 
     def create_table(
@@ -83,7 +82,6 @@ class dataManager:
         self.exec(code)
 
     def insert(self, table: str, columns: list or tuple, values: list or tuple):
-        print(self.convert_insert(columns, True))
         code = f"""
         INSERT INTO {table} ({self.convert_insert(columns,True)})
         VALUES({self.convert_insert(values)})
@@ -145,7 +143,7 @@ class User:
 
         self.aboutme = ""
         self.highlight_color = "#000"
-        self.links = []
+        self.links = {}
 
         self.start()  # Multiples Checks
 
@@ -164,6 +162,7 @@ class User:
         x = self.getMeInDatabase()
         self.highlight_color = x['highlight_color']
         self.aboutme = x['aboutme']
+        self.links = x['links']
 
     def start(self):
         if self.access_token:
