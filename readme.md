@@ -7,8 +7,20 @@
 - [ ] Layout
 - [x] Overlay Menus
 - [x] Profile Settings
-- [ ] Posts System
+- [x] Posts System
 - [ ] Reload Discord Account System(Full or 1/2)
+- [x] Rich Text Editor
+- [ ] Delete Post
+- [ ] Edit Post
+- [ ] Follow System
+- [ ] Like and unlike system
+- [ ] Order system
+
+# Fixes
+- ``requirements.txt`` Added Flask to fix
+- ``Url Fix`` google.com > localhost:5000
+- ``Data Folder`` Don't go to github
+
 
 **Install & Prepare**
 ```powershell
@@ -19,6 +31,6 @@ python main.py
 # Acess host: localhost:5000
 ```
 
-**After run main.py > click [here](https://google.com).**
+**After run main.py > click [here](https://localhost:5000).**
 
 🛠Build a Site for a Treasure

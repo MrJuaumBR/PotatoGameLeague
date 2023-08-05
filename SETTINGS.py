@@ -1,14 +1,27 @@
-from flask import Flask, redirect, url_for, render_template, request, session
+from flask import Flask, redirect, url_for, render_template, request, session, flash, render_template_string
+from jinja2 import pass_context, Template, filters
+from markupsafe import Markup
+
 from urllib import parse
 from zenora import APIClient
-from os import environ
+from os import environ, path, mkdir
 import sqlite3 as sql
 import json
+from datetime import datetime
 
 app = Flask(__name__, "/", "./static")
 app.template_folder = "pages"
 app.static_folder = "static"
 
+#@pass_context
+def jineval(need_eval):
+    evalued = eval(need_eval)
+    return evalued
+
+filters.FILTERS['jineval']=  jineval
+
+if not path.exists('./data'):
+    mkdir('./data/')
 
 SITE_URL = "http://localhost:5000"
 
@@ -29,7 +42,6 @@ class dataManager:
         self.autocommit = True
 
     def exec(self, code, values=()):
-        #print(code, values)
         try:
             x = self.cur.execute(str(code), values)
             if self.autocommit:
@@ -72,12 +84,16 @@ class dataManager:
                     n += f"{x} = {v}, "
         return str(n)
 
-    def create_table(
-        self, table_name: str, columns: list or tuple, types: list or tuple
-    ):
+    def create_table(self, table_name: str, columns: list or tuple, types: list or tuple):
         var = self.convert_create_table(columns, types)
         code = f"""
         CREATE TABLE IF NOT EXISTS {table_name} ({str(var)})
+        """
+        self.exec(code)
+
+    def delete_table(self,table:str):
+        code =  f"""
+            DROP TABLE IF EXISTS {table}
         """
         self.exec(code)
 
@@ -102,11 +118,25 @@ class dataManager:
         values = (id,)
         return self.cur.execute(code, values).fetchone()
 
+    def getAll(self, table:str):
+        code = f"""
+        SELECT * FROM {table}
+        """
+        return self.cur.execute(code).fetchall()
+
+    def delete(self,table:str, id:int):
+        code = f"""
+        DELETE FROM {table} WHERE id=?
+        """
+        values = (id,)
+        self.exec(code, values)
+
     def is_registered(self, table: str, id: int, auto_insert=False, insert_value=()):
         def repeat():
             x = self.get(table, id)
             if not x and auto_insert:
                 self.insert(table, insert_value[0], insert_value[1])
+                x = repeat()
             return x
 
         x = repeat()
@@ -144,6 +174,7 @@ class User:
         self.aboutme = ""
         self.highlight_color = "#000"
         self.links = {}
+        self.admin = False
 
         self.start()  # Multiples Checks
 
@@ -171,6 +202,9 @@ class User:
 
             self.authenticated = False
             self.id = self.user["id"]
+            if int(self.id) in eval(environ['ADMINS_ID']):
+                self.admin = True
+            
             self.loadLocalDatabase()
             if not (self.access_token in ["", " ", None, "None"]):
                 if self.access_token:
@@ -205,13 +239,15 @@ Columns:
 - AuthorId INTEGER NOT NULL
 """
 
-DB_POST_TABLE_COLUMNS = ["id", "title", "description", "date", "authorid"]
+DB_POST_TABLE_COLUMNS = ["id", "data"]
 DB_USERS_TABLE_COLUMNS = ["id", "data"]
+DB_TAGS_TABLE_COLUMNS = ['id','name']
+DB_DATETIME_STR = "%d/%m/%Y, %I:%M"
 
 Database.create_table(
     "post",
     DB_POST_TABLE_COLUMNS,
-    ["INTEGER PRIMARY KEY", "TEXT", "TEXT", "TEXT", "INTEGER NOT NULL"],
+    ["INTEGER PRIMARY KEY", "TEXT"],
 )  # Create Table of posts
 """
 DATABASE MANAGER
@@ -220,5 +256,31 @@ Columns:
 - username TEXT # Discord
 - Aboutme TEXT # Discord
 """
-
 Database.create_table("users", DB_USERS_TABLE_COLUMNS, ["INTEGER PRIMARY KEY", "TEXT"])
+
+"""
+DATABASE MANAGER
+Columns:
+- Id INTEGER PRIMARY KEY
+- Name TEXT
+"""
+
+Database.create_table('tags', DB_TAGS_TABLE_COLUMNS, ["INTEGER PRIMARY KEY", "TEXT"])
+
+def PostFilterTags(tag:int):
+    d = dataManager()
+    tag = d.get('tags',tag)
+    if tag:
+        posts = d.getAll('post')
+        cposts = []
+        for post in posts:
+            ptag = eval(post[1])['tags']
+            if len(ptag) > 0:
+                if tag[1] in ptag:
+                    cposts.append(post)
+        if len(cposts) > 0:
+            return cposts
+        else:
+            return None # Sem posts
+    else:
+        return False # Sem tag

@@ -1,0 +1,23 @@
+{% set post = database.get('post',postId)[1]|jineval%}
+{% set author = database.get('users',post['autorId'])[1]|jineval %}
+{%extends 'base.html'%}{%block title%}{{post['title']}}{%endblock%}
+{%block content%}
+<h1>{{post['title']}}</h1>
+<a href="/u?id={{author['id']}}" class="text-white"><h6>{{author['user']['username']}}</h6></a>
+<div>
+    <small style="font-size: 0.6em;">Tags:
+        {% if post['tags'] %}
+            {% for tag in post['tags'] %}
+                <span>{{database.get('tags',tag)[1]}},</span>
+            {% endfor %}
+        {% endif %}
+    </small>
+</div>
+<div class="text-white" style="box-shadow: 0.25em 0.25em 0.1em black; background-color: rgba(0,0,0,0.05); border: 0.1em solid black; margin: 1em;">
+    {% autoescape true %}
+        {{post['content']}}
+    {% endautoescape %}
+</div>
+<small style="font-size: 0.7em;">Postado em: {{post['date']}}</small>
+<a href="/d?pId={{postId}}"><button class="btn btn-danger" style="font-size: 0.6em;">Apagar Post</button></a>
+{%endblock%}

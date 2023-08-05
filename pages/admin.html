@@ -1,0 +1,41 @@
+{%extends 'base.html'%}{%block title%}Administrador{%endblock%}
+{%block content%}
+<script src="plugins/multiselect-dropdown.js"></script>
+<h1>Administrador</h1>
+<form method="POST">
+    <div class="form-group">
+        <h3>Tags:</h3>
+        <select class="form-control text-black" id="tags" name="tags" onchange="tagChanged()">
+            <option value="" class="text-black">Selecione uma tag</option>
+            {% for tag in database.getAll('tags') %}
+                <option value="{{tag[0]}}" class="text-black">{{tag[1]}}</option>
+            {% endfor %}
+        </select>
+        <div id="tag-interact" hidden>
+            <button class="btn btn-danger" type="submit" name="tag-d" value="">Apagar Tag</button>
+        </div>
+        <br><br>
+        <div class="bg-dark">
+            <br>
+            <label class="form-label" for="tag-c-name">Criar Tag:</label>
+            <input class="form-control" style="width: 10em;" name="tag-c-name" id="tag-c-name">
+            <button type="submit" name="tag-c" class="btn btn-secondary">Criar Tag</button>
+            <br>
+        </div>
+        <script>
+            function tagChanged(){
+                let tags = document.getElementById('tags');
+                let d = document.getElementById('tag-interact');
+                if (tags && tags.value){
+                    d.hidden = false;
+                }else{
+                    d.hidden = true;
+                };
+            }
+            $(document).ready(function(){
+                $("#tags").select2();
+            });
+        </script>
+    </div>
+</form>
+{% endblock %}

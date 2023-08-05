@@ -1,4 +1,4 @@
-{%extends 'base.html'%}{%block title%}Home{%endblock%}
+{%extends 'base.html'%}{%block title%}Configurações{%endblock%}
 {%block content%}
 <h1><i class="fa-solid fa-gear"></i>Configurações</h1>
 <form method="POST">
@@ -15,9 +15,28 @@
             {% for url in current_user.links.keys() %}
                 <div value="{{url}}" id="link{{url}}">
                     <input type="text" style="margin: 0.1em; display: inline-block; width: 7em;" placeholder="Título do Link" class="form-control" name="url-title{{url}}" value="{{current_user.links[url]['title']}}">
-                    <input type="text" style="margin: 0.1em; display: inline-block; width: 6em;" placeholder="Link" class="form-control" name="url-title{{url}}" value="{{current_user.links[url]['url']}}">
+                    <input type="text" style="margin: 0.1em; display: inline-block; width: 6em;" placeholder="Link" class="form-control" name="url-url{{url}}" value="{{current_user.links[url]['url']}}">
+                    <select class="form-control" id="url-type{{url}}" style="width: 5em; display: inline-block;" name="url-type{{url}}">
+                        <option value="fa-solid fa-link">Selecione um tipo de URL</option>
+                        <option value="fa-solid fa-link">Qualquer</option>
+                        <option value="fa-brands fa-discord">Discord</option>
+                        <option value="fa-brands fa-youtube">YouTube</option>
+                    </select>
                     <span id="btnLink{{url}}" onclick="removeURL(this)" class="btn btn-secondary" style="background-color: red; margin: 0.1em;">Remover</span>
                     <script>
+                        function getMe(val){
+                            var x = document.getElementById('url-type{{url}}');
+                            for (var i in x.children){
+                                if (x.children[i].value == val){
+                                    return x.children[i];
+                                }
+                            }
+                        }
+                        // Load type of link
+                        
+                        var urltype = getMe("{{current_user.links[url]['type']}}");
+                        urltype.selected = true;
+
                         var btn = document.getElementById("btnLink{{url}}");
                         btn.value = "{{url}}";
                         document.getElementById("url_index").value = document.getElementById('urls_enter').childElementCount;
@@ -35,6 +54,7 @@
             var index = document.getElementById('urls_enter').childElementCount;
             if (index+1 <= 3){
                 var div = document.createElement('div');
+                div.value = index;
 
                 var inp = document.createElement('input');// Title
                 inp.type = "text";
@@ -55,7 +75,23 @@
                 inp.style.display = "inline-block";
                 inp.style.margin = "0.1em";
                 div.append(inp);
-                
+
+                // Select
+                var select = document.createElement('select');
+                select.style.width = "5em";
+                select.className = "form-control";
+                select.style.display = "inline-block";
+                select.name="url-type"+index;
+                select.id = "url-type"+index;
+                var options = [["fa-solid fa-link","Selecione um tipo de URL"],["fa-solid fa-link","Qualquer"],["fa-brands fa-discord","Discord"],["fa-brands fa-youtube","YouTube"]]
+                for (var opt in options){
+                    var op = document.createElement('option');
+                    op.value = options[opt][0];
+                    op.textContent = options[opt][1];
+                    select.append(op);
+                };
+                div.append(select);
+
                 var btn = document.createElement('span');
                 btn.className = "btn btn-secondary";
                 btn.style.backgroundColor = "red";
@@ -76,7 +112,7 @@
             }
         }
         function removeURL(value){
-            var x = document.getElementById('link'+String(value.value));
+            var x = document.getElementById('link'+String(value));
             // Convert to List > Remove index > Convert to string
             
             x.remove();            

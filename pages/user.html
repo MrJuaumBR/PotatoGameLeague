@@ -23,7 +23,7 @@
             <small>Links deste Usuário:</small>
             <ul style="color: #fff;">
                 {% for url in user.links.keys() %}
-                    <li><a class="OUserColor" href="{{user.links[url]['url']}}">{{user.links[url]['title']}}</a></li>
+                    <li><a class="OUserColor" href="{{user.links[url]['url']}}"><i class="{{user.links[url]['type']}}"></i>{{user.links[url]['title']}}</a></li>
                 {%endfor%}
             </ul>
         </div>

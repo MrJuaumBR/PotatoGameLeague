@@ -1,0 +1,11 @@
+{% set post = postT[1]|jineval%}
+{%extends 'base.html'%}{%block title%}Deletar {{post['title']}}{%endblock%}
+{%block content%}
+<form method="post">
+    <h1>Você tem certeza que deseja apagar a sua postagem?</h1>
+    <h3>Será impossivel recuperar ela depois de sua confirmação.</h3>
+
+    <button class="btn btn-danger" type="submit">Apagar</button>
+    <a href="/" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}
