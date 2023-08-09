@@ -6,27 +6,13 @@
     <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-content" aria-expanded="false" aria-controls="collapse-content"><i class="fa-solid fa-bars"></i></button>
 </h3>
 <br>
-<div id="collapse-content" class="collapse">
+<div id="collapse-content" class="collapse" style="width: 100%;">
     <hr>
     <div class="container">
-      {% for line in posts%}
-        <div class="row p-5 mx-2">
-          {% for post in line %}
-            <div class="col bg-primary bg-gradient mx-1">
-              <a class="text-light" href="/p/{{post[0]}}"><h3>{{post[1]['title']}}</h3></a>
-              {%set x = database.get('users',post[1]['autorId'])[1]|jineval %}
-              <a href="/u?id={{post[1]['autorId']}}" class="text-white"><h6>Autor: {{x['user']['username']}}</h6></a>
-              {% if post[1]['tags'] %}
-                <small>Tags:
-                {% for tag in post[1]['tags'] %}
-                  <span>{{database.get('tags',tag)[1]}},</span>
-                {% endfor %}
-                </small>
-              {%endif%}
-            </div>  
-          {% endfor %}
-        </div>
-      {% endfor %}
+      
+      <div id="posts" style="width: 100%;">
+        {% include '/loadable/post_show.html' %}
+      </div>
     </div>
 </div>
 {%endblock%}

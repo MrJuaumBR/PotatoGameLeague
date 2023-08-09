@@ -10,7 +10,19 @@ h1 {
 .page-title {
     color: #7289da;
     text-shadow: .5em .25em 1em rgb(169, 217, 221);
-    font-size: 3em;
+    font-size: 1.6em;
+}
+
+.nav_link .fa-solid{
+    transition:all 1s;
+}
+
+.nav_link:hover .fa-solid{
+    transform:rotate(360deg);
+}
+
+nav-pills li a:hover{
+    background-color: blue;
 }
 
 .content{

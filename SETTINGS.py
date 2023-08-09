@@ -8,17 +8,38 @@ from os import environ, path, mkdir
 import sqlite3 as sql
 import json
 from datetime import datetime
+import zlib
 
 app = Flask(__name__, "/", "./static")
 app.template_folder = "pages"
 app.static_folder = "static"
 
-#@pass_context
+# Evaluation
 def jineval(need_eval):
     evalued = eval(need_eval)
     return evalued
 
+# Get len of a item
+def get_len(need_len):
+    l = len(need_len)
+    return l
+
+def get_db_size(x):
+    if path.exists('./data/database.db'):
+        size = path.getsize('./data/database.db')
+        if size >= 1024: # Kilobytes:
+            size = str(round(size/1024,3)) + " Kilobytes"
+        elif size >= (1024**2):
+            size = str(round(size/(1024**2),3)) + " Megabytes"
+        elif size >= (1024**3):
+            size = str(round(size/(1024**3), 3)) + " Gigabytes"
+        else:
+            size = str(size) + " Bytes"
+        return size
+
 filters.FILTERS['jineval']=  jineval
+filters.FILTERS['get_len']=  get_len
+filters.FILTERS['get_db_size'] = get_db_size
 
 if not path.exists('./data'):
     mkdir('./data/')
@@ -64,6 +85,7 @@ class dataManager:
         n = ""
         for i, x in enumerate(values):
             v = x
+            print(v)
             if type(x) == str and not column:
                 v = f""""{str(x)}" """
             if i < len(values) - 1:
@@ -82,6 +104,7 @@ class dataManager:
                     n += f"{x} = {v}"
                 else:
                     n += f"{x} = {v}, "
+        print(n, "teioajsdojijaskhn")
         return str(n)
 
     def create_table(self, table_name: str, columns: list or tuple, types: list or tuple):
@@ -122,6 +145,7 @@ class dataManager:
         code = f"""
         SELECT * FROM {table}
         """
+        _all = []
         return self.cur.execute(code).fetchall()
 
     def delete(self,table:str, id:int):
@@ -148,7 +172,6 @@ class dataManager:
         """
         self.exec(code, (id,))
 
-
 def ConvertOwnUserToDict(POwnUser):
     result = {}
     for attr in dir(POwnUser):
@@ -156,9 +179,8 @@ def ConvertOwnUserToDict(POwnUser):
             result[attr] = POwnUser.__getattribute__(attr)
     return result
 
-
 class User:
-    def __init__(self, code: str = "", id: int = 0) -> None:
+    def __init__(self, code: str = "", id: int = 0, defaulter=False) -> None:
         if code != "":
             self.access_token = client.oauth.get_access_token(
                 code, REDIRECT_URL
@@ -171,12 +193,35 @@ class User:
         else:
             self.id = None
 
+        self.defaulter = defaulter
         self.aboutme = ""
         self.highlight_color = "#000"
+        self.gradient_color = "#000"
         self.links = {}
         self.admin = False
+        self.followers = []
+        self.notifications = []
 
         self.start()  # Multiples Checks
+
+    def checkIntegrity(self,val):
+        val2 = val
+        for key in User(defaulter=True).__dict__.keys():
+            if not key in val.keys():
+                x = User(defaulter=True).__dict__[key]
+                if type(x) == bool:
+                    val2[key] = False
+                elif type(x) == list:
+                    val2[key] = []
+                elif type(x) == tuple:
+                    val2[key] = ()
+                elif type(x) == str:
+                    val2[key] = ""
+                elif type(x) == int:
+                    val2[key] = 0
+                else:
+                    val2[key] = x
+        return val2
 
     def getMeInDatabase(self):
         d = dataManager()
@@ -191,9 +236,11 @@ class User:
 
     def loadLocalDatabase(self):
         x = self.getMeInDatabase()
-        self.highlight_color = x['highlight_color']
-        self.aboutme = x['aboutme']
-        self.links = x['links']
+        y = self.checkIntegrity(x) # Check integrity
+        self.__dict__ = y
+        # self.highlight_color = x['highlight_color']
+        # self.aboutme = x['aboutme']
+        # self.links = x['links']
 
     def start(self):
         if self.access_token:
@@ -221,7 +268,19 @@ class User:
                 self.authenticated = False
         else:
             if self.id:
-                self.__dict__ = self.getMeInDatabase()
+                self.loadLocalDatabase()
+            elif self.defaulter:
+                self.defaulter = False
+                self.aboutme = ""
+                self.highlight_color = "#000"
+                self.gradient_color = "#000"
+                self.links = {}
+                self.admin = False
+                self.followers = []
+                self.notifications = []
+                self.authenticated = False
+                self.user = {}
+                self.id = 0
 
     def loadAccessToken(self, code):
         self.access_token = code
@@ -229,43 +288,21 @@ class User:
 
 
 Database = dataManager()
-"""
-DATABASE MANAGER
-Columns:
-- Id INTEGER PRIMARY KEY
-- Title TEXT
-- Description TEXT
-- Date TEXT
-- AuthorId INTEGER NOT NULL
-"""
 
 DB_POST_TABLE_COLUMNS = ["id", "data"]
 DB_USERS_TABLE_COLUMNS = ["id", "data"]
 DB_TAGS_TABLE_COLUMNS = ['id','name']
+DB_SUGGESTIONS_TABLE_COLUMNS = ['id','data']
+
 DB_DATETIME_STR = "%d/%m/%Y, %I:%M"
 
-Database.create_table(
-    "post",
-    DB_POST_TABLE_COLUMNS,
-    ["INTEGER PRIMARY KEY", "TEXT"],
-)  # Create Table of posts
-"""
-DATABASE MANAGER
-Columns:
-- Id INTEGER PRIMARY KEY # Discord
-- username TEXT # Discord
-- Aboutme TEXT # Discord
-"""
-Database.create_table("users", DB_USERS_TABLE_COLUMNS, ["INTEGER PRIMARY KEY", "TEXT"])
+Database.create_table("post",DB_POST_TABLE_COLUMNS,["INTEGER PRIMARY KEY", "TEXT"])  # Create Table of posts
 
-"""
-DATABASE MANAGER
-Columns:
-- Id INTEGER PRIMARY KEY
-- Name TEXT
-"""
+Database.create_table("users", DB_USERS_TABLE_COLUMNS, ["INTEGER PRIMARY KEY", "TEXT"]) # Create Users Table
 
-Database.create_table('tags', DB_TAGS_TABLE_COLUMNS, ["INTEGER PRIMARY KEY", "TEXT"])
+Database.create_table('tags', DB_TAGS_TABLE_COLUMNS, ["INTEGER PRIMARY KEY", "TEXT"]) # Create tags Table
+
+Database.create_table('suggestions', DB_SUGGESTIONS_TABLE_COLUMNS,["INTEGER PRIMARY KEY", "TEXT"]) # Create suggestions table
 
 def PostFilterTags(tag:int):
     d = dataManager()

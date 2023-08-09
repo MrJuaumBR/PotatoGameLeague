@@ -2,7 +2,11 @@ window.onload=(ev) => {
     // Make Discord Connection Link
     var url = "https://discord.com/api/oauth2/authorize?client_id=1043495092977152061&redirect_uri=";
     var url2= "&response_type=code&scope=identify%20email%20connections%20guilds";
-    url = url + document.location.href+"oauth/callback" + url2;
+    var domain = "https://" + document.location.hostname;
+    if (domain == "https://localhost"){ // Fix for local tests
+        domain = "http://" + document.location.host;
+    };
+    url = url + domain+ "/oauth/callback" + url2;
     let aref = document.getElementById('login-discord');
     if (aref){ // Check if it exists
         aref.href = url;
@@ -29,11 +33,19 @@ function clockUpdate(){
 clockUpdate()
 
 // Overlay
-function OverlayOpen(url){
-    var d = document.getElementById('overlay');
+function OverlayOpen(url,faid=NaN){
+    if (faid){
+        var Overid = "overlay-"+faid;
+    }
+    else{
+        var Overid = "overlay";
+    };
+    var d = document.getElementById(Overid);
     if (d.style.display=="none"){
         d.style.display = "block";
-        $('#overlay').load(url);
+        if (!faid){
+            $('#overlay').load(url);   
+        }
     }
     else{
         if (d.style.display=="block"){
@@ -46,8 +58,13 @@ function OverlayOpen(url){
     
 }
 
-function hideOverlay(){
-    var d = document.getElementById('overlay');
+function hideOverlay(id=NaN){
+    if (id){
+        var d = document.getElementById(id);
+    }
+    else{
+        var d = document.getElementById('overlay');
+    }
     d.style.display = "none";
 }
 

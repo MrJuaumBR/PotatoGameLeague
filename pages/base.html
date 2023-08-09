@@ -1,112 +1,156 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Potato Game League - {%block title%}{%endblock%}</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <div> <!-- Scripts & Styles -->
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-            <link href="../style.css" rel="stylesheet">
-            <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-            <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
-            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-            <script src="https://kit.fontawesome.com/9bf0cadce3.js" crossorigin="anonymous"></script>
-        </div>
-        
-    </head>
-    <body class="d-flex flex-nowrap">
-        <div class="d-flex bg-dark container-fluid" id="navbar" style="width: 15em;"> <!-- Side Bar-->
-            <div class="d-flex color-changeable" style="height: 100%; width: 0.25em; background-color: none; left: 0; position: fixed;">
-                <div class="vr"></div>
-            </div>
-            <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none page-title">PGL</a>
-                <hr class="d-flex-hr">
-                <ul class="nav nav-pills flex-column mb-auto">
-                    <li class="nav-item">
-                        <a href="/"><i class="fa-solid fa-house"></i>Home</a>
-                    </li>
-                    {%if current_user %}
-                        <li>
-                            <a href="{{url_for('create')}}"><i class="fa-solid fa-circle-plus"></i>Criar</a>
-                        </li>
-                        {% if current_user.admin %}
-                            <li>
-                                <a href="{{url_for('admin')}}"><i class="fa-solid fa-hammer"></i>Admin</a>
-                            </li>
-                        {%endif%}
-                    {% endif %}
-                    <li>
-                        <a href="#" onclick="OverlayOpen('/about.html')"><i class="fa-solid fa-address-card"></i>Sobre-nós</a>
-                    </li>
-                    {% if not current_user %}
-                        <li><a href="" id="login-discord"><i class="fa-solid fa-right-to-bracket"></i>Log-in</a></li>
+  <head>
+    <title>Potato Game League - {%block title%}{%endblock%}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <div>
+      <!-- Scripts & Styles -->
+      <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+        crossorigin="anonymous"
+      />
+      <link href="../style.css" rel="stylesheet" />
+      <link href="../plugins/ostyle.css" rel="stylesheet"/>
+      <link
+        href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+        rel="stylesheet"
+      />
+      <script
+        src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+        crossorigin="anonymous"
+      ></script>
+      <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+      <script
+        src="https://kit.fontawesome.com/9bf0cadce3.js"
+        crossorigin="anonymous"
+      ></script>
+      <script src="../plugins/oscript.js"></script>
+    </div>
+  </head>  
+  <body id="body-pd" class="d-flex">
+    <div id="background-details" style="width: 100%; height: 100%; top: 0; left: 0;"></div>
+    <header class="header bg-dark text-white" id="header">
+        <hr class="color-changeable d-flex d-flex-hr" style="top: -0.55em; height: 0.1em; width: 100%; position: absolute;">
+        <div class="header_toggle"><i class="fa-solid fa-bars" id="header-toggle"></i></div>
+        {% if current_user and current_user.notifications|get_len > 0  %}
+          <div class="header_img btn btn-secondary" onclick="OverlayOpen('/gnotify.html','n')"><i class="fa-regular fa-bell" style="color: red;"></i><span class=" text-white text-decoration-none">{{current_user.notifications|get_len}}</span></div>
+        {%endif%}
+    </header>
+    <div class="l-navbar bg-dark" id="nav-bar">
+        <div class="vr color-changeable" style="width: 0.1em; height: 100%; position: absolute; top: 0%; left: 0%;"></div>
+        <nav class="nav">
+            <div><a href="#" class="nav-logo page-title"><i class="bx bx-layer nav_logo-icon"></i><span class="nav_logo-name">PGL</span></a></div>
+            <div class="nav_list">
+                <a href="/" class="nav_link text-white"><i class="fa-solid fa-house"></i><span class="nav_name">Home</span></a>
+                {%if current_user %}
+                    <a href="{{url_for('create')}}" class="nav_link text-white"><i class="fa-solid fa-circle-plus"></i><span class="nav_name">Criar</span></a>
+                    {% if current_user.admin %}
+                            <a href="{{url_for('admin')}}" class="nav_link text-white"><i class="fa-solid fa-hammer"></i><span class="nav_name">Admin</span></a>
                     {%endif%}
-                </ul>
-                <br>
-                <hr class="d-flex-hr">
-                <div class="dropdown">
-                    <br>
-                    <small id="clock" class="text-small">HH:MM</small>
-                    {% if current_user %}
-                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img width="32" height="32" title="{{current_user.user['username']}}" src="{{current_user.user['avatar_url']}}">
-                            <strong>{{current_user.user.username}}</strong>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                            <li>
-                                <a href="/u?id={{current_user.user['id']}}" class="dropdown-item"><i class="fa-solid fa-user"></i>Meu Perfil</a>
-                            </li>
-                            <li>
-                                <a href="/config" class="dropdown-item"><i class="fa-solid fa-gear"></i>Configurações</a>
-                            </li>
-                            <li>
-                                <a href="/logout" class="dropdown-item"><i class="fa-solid fa-right-from-bracket"></i>Log-out</a>
-                            </li>
-                        </ul>
-                    {% else %}
-                    {% endif %}
-                    <br>
-                </div>
+                {% endif %}
+                <a href="#" class="nav_link text-white" onclick="OverlayOpen('/about.html')"><i class="fa-solid fa-circle-exclamation"></i><span class="nav_name">Sobre-nós</span></a>
+                <a href="#" class="nav_link text-white" onclick="OverlayOpen('/readme_viewer.html')"><i class="fa-solid fa-file-lines"></i><span class="nav_name">Readme.md</span></a>
+                {% if not current_user %}
+                        <a href="" class="nav_link text-white" id="login-discord"><i class="fa-solid fa-right-to-bracket"></i><span class="nav_name">Log-in</span></a>
+                {%endif%}
             </div>
-        </div>
-        <div class="content container mt-3" id="content">
-            <div>
+            <div class="dropdown">
                 <br>
-                {% with messages = get_flashed_messages(with_categories=True) %}
-                    {% if messages %}
-                        <ul class="flashes">
-                            {% for message in messages %}
-                                <li class="alert alert-{{message[0]}}">
-                                    <i class="fa-solid fa-circle-exclamation"></i>
-                                    {{message[1]}}
-                                    <button class="btn-close btn-close-black" onclick="this.parentElement.remove()" aria-label="Close"></button>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                {% endwith %}
+                <span id="clock" class="text-small text-white">HH:MM</span>
+                {% if current_user %}
+                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" onclick="OpenNavbar()" aria-expanded="false">
+                        <img width="32" height="32" style="border-radius: 100%;" title="{{current_user.user['username']}}" src="{{current_user.user['avatar_url']}}">
+                        <strong>{{current_user.user.username}}</strong>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+                        <li>
+                            <a href="/u?id={{current_user.user['id']}}" class="dropdown-item"><i class="fa-solid fa-user"></i>Meu Perfil</a>
+                        </li>
+                        <li>
+                            <a href="/config" class="dropdown-item"><i class="fa-solid fa-gear"></i>Configurações</a>
+                        </li>
+                        <li>
+                            <a href="/logout" class="dropdown-item"><i class="fa-solid fa-right-from-bracket"></i>Log-out</a>
+                        </li>
+                    </ul>
+                {% else %}
+                {% endif %}
+                <br>
             </div>
-            <hr>
-            {%block content%}
-            {%endblock%}
-            <hr class="d-flex color-changeable justify-content-bottom" style="height: 0.25em; width: 100%; background-color: none; left: 0; bottom: 0; border: 0.1em solid none;">
+        </nav>
+    </div>
+    <div class="content container mt-3" id="content">
+        <div>
+          <br />
+          {% with messages = get_flashed_messages(with_categories=True) %} {% if
+          messages %}
+          <ul class="flashes">
+            {% for message in messages %}
+            <li class="alert alert-{{message[0]}}">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              {{message[1]}}
+              <button
+                class="btn-close btn-close-black"
+                onclick="this.parentElement.remove()"
+                aria-label="Close"
+              ></button>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %} {% endwith %}
         </div>
-        <script>
-            // Site Color Highlight
-            function ColorHighlight(){
-                var elements = document.getElementsByClassName('color-changeable');
-                for (var ele of elements){
-                    ele.style.backgroundColor = "{{current_user.highlight_color}}";
-                    ele.style.borderColor = "{{current_user.highlight_color}}";
-                };
-            }
-            ColorHighlight()
-        </script>
-        <div class="overlay" id="overlay"> <!-- Overlay div -->
-        </div>
+        <hr />
+        {%block content%} {%endblock%}
         <br>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-        <script src="../script.js" type="text/javascript"></script>
-    </body>
+        <hr class="d-flex color-changeable justify-content-bottom" style="height: 0.25em; width: 100%; background-color: none; left: 0; bottom: 0; border: 0.1em solid none;"/>
+        <br>
+        <br>
+        <small style="font-size: 0.7em;">Desenvolvido por 1 pessoa. usando bootstrap 5, Font-awesome, Python, Flask, Jinja, HTML, CSS, JavaScript e JQuery</small>
+    </div>
+    <script>
+      // Site Color Highlight
+      function ColorHighlight() {
+        var elements = document.getElementsByClassName("color-changeable");
+        for (var ele of elements) {
+          ele.style.backgroundImage = "linear-gradient({{current_user.highlight_color}},{{current_user.gradient_color}})"
+          ele.style.backgroundColor = "{{current_user.highlight_color}}";
+          ele.style.borderColor = "{{current_user.highlight_color}}";
+        }
+      }
+      ColorHighlight();
+    </script>
+    <div class="overlay" id="overlay"><!-- Overlay div --></div>
+    <div class="overlay" id="overlay-n"><!-- Overlay div -->{%include './loadable/notify.html' %}</div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script src="../script.js" type="text/javascript"></script>
+    <script>
+      const dtils = document.getElementById('background-details');
+      dtils.style.flex = "0 0 0";
+      dtils.style.zIndex = "-1";
+      if ("{{current_user}}"){
+          for (var x=0; x < 60; x++){
+              var y = document.createElement('div');
+              
+              y.style.width= String(Math.random()*5)+'em';
+              y.style.height= String(Math.random()*5)+'em';
+              y.style.left = String(Math.random()*92)+"%";
+              y.style.top = String(Math.random()*100)+"%";
+              y.style.position = "absolute";
+              y.style.backgroundColor = "#000";
+              y.style.backgroundImage = 'linear-gradient({{current_user.highlight_color}},{{current_user.gradient_color}})';
+              y.style.zIndex = "-5";
+              
+              dtils.append(y);
+          }
+      }
+    </script>
+  </body>
 </html>

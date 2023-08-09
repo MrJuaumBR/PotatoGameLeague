@@ -1,0 +1,21 @@
+<div class="menu">
+    <div class="head">
+        <div class="h-content">
+            <small>Notificações</small>
+            <button onclick="hideOverlay('overlay-n')" class="btn text-white bg-dark">Fechar</button>
+        </div>
+    </div>
+    <h3>Notificações</h3>
+    <a href="/dlnall" class="btn btn-danger">Apagar todas.</a>
+    <ul>
+        {% for notify in current_user.notifications %}
+            <li>
+                <div class="alert alert-{{notify['type']}}">
+                    <h4>{{notify['message']}}</h4>
+                    <small>{{notify['date']}}</small>
+                    <a href="/dln?id={{notify['id']}}" class="btn btn-danger" title="Apagar"><i class="fa-solid fa-x"></i></a>
+                </div>
+            </li>
+        {%endfor%}
+    </ul>
+</div>

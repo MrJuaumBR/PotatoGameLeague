@@ -1,0 +1,28 @@
+{% for line in posts%}
+    <div class="row p-5 mx-2" style="width: 100%;">
+        {% for p in line %}
+        {% set postP2 = p[1]|jineval %}
+        {% set post = (p[0],postP2) %}
+        <div class="col mx-1" id="post-{{post[0]}}" style="background-image: none;">
+            <a class="text-light" href="/p/{{post[0]}}"><h3>{{post[1]['title']}}</h3></a>
+            {% set author_id = post[1]['autorId']%}
+            {%set x = database.get('users',author_id)[1]|jineval %}
+            <a href="/u?id={{post[1]['autorId']}}" class="text-white"><h6>Autor: {{x['user']['username']}}</h6></a>
+            <div>
+                <span class="text-white" style="font-size: 0.75em; background-color: green;"><i class="fa-regular fa-thumbs-up"></i>{{post[1]['wholike']|get_len}}</span>
+                <span class="text-white" style="font-size: 0.75em; background-color: red;"><i class="fa-regular fa-thumbs-down"></i>{{post[1]['whounlike']|get_len}}</span>
+            </div>
+            {% if post[1]['tags'] %}
+                <small>Tags:
+                    {% for tag in post[1]['tags'] %}
+                        <span>{{database.get('tags',tag)[1]}},</span>
+                    {% endfor %}
+                </small>
+            {%endif%}
+            <script>
+                document.getElementById("post-{{post[0]}}").style.backgroundImage="linear-gradient({{current_user.highlight_color}},{{current_user.gradient_color}})";
+            </script>
+        </div>  
+        {% endfor %}
+    </div>
+{% endfor %}

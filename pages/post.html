@@ -3,7 +3,13 @@
 {%extends 'base.html'%}{%block title%}{{post['title']}}{%endblock%}
 {%block content%}
 <h1>{{post['title']}}</h1>
-<a href="/u?id={{author['id']}}" class="text-white"><h6>{{author['user']['username']}}</h6></a>
+<a href="/u?id={{author['id']}}" class="text-white"><h6><img style="width: 1.5em; height: 1.5em; border: none; border-radius: 100%;" src="{{author['user']['avatar_url']}}">{{author['user']['username']}}</h6></a>
+<div>
+    <form method="post">
+        <button class="btn btn-success" name="+" style="font-size: 0.6em; display: inline-block;"><i class="fa-regular fa-thumbs-up"></i>{{post['wholike']|get_len}}</button>
+        <button class="btn btn-danger" name="-" style="font-size: 0.6em; display: inline-block;"><i class="fa-regular fa-thumbs-down"></i>{{post['whounlike']|get_len}}</button>
+    </form>
+</div>
 <div>
     <small style="font-size: 0.6em;">Tags:
         {% if post['tags'] %}
@@ -14,10 +20,17 @@
     </small>
 </div>
 <div class="text-white" style="box-shadow: 0.25em 0.25em 0.1em black; background-color: rgba(0,0,0,0.05); border: 0.1em solid black; margin: 1em;">
-    {% autoescape true %}
-        {{post['content']}}
-    {% endautoescape %}
+    <div id="post-content">
+        {% autoescape true %}
+            {{post['content']}}
+        {% endautoescape %}
+    </div>
 </div>
-<small style="font-size: 0.7em;">Postado em: {{post['date']}}</small>
-<a href="/d?pId={{postId}}"><button class="btn btn-danger" style="font-size: 0.6em;">Apagar Post</button></a>
+<small style="font-size: 0.7em;">Postado em: {{post['date']}}</small><br>
+<div>
+    {% if current_user.id == post['autorId'] or current_user.admin %}
+        <a href="/d?pId={{postId}}"><button class="btn btn-danger" style="font-size: 0.6em;"><i class="fa-solid fa-trash"></i>Apagar Postagem</button></a>
+        <a href="/edit?pId={{postId}}"><button class="btn btn-info" style="font-size: 0.6em;"><i class="fa-regular fa-pen-to-square"></i>Editar Postagem</button></a>
+    {% endif %}
+</div>
 {%endblock%}

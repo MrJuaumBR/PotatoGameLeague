@@ -1,0 +1,12 @@
+{%extends 'base.html'%}{%block title%}Sugerir{%endblock%}
+{%block content%}
+<h1>Tem alguma sugestão?</h1>
+<form method="post">
+    <label for="suggest" class="form-label">Escreva sua sugestão:</label>
+    <textarea id="suggest" name="suggest" type="text" class="form-control" style="height: 5em;"></textarea>
+
+    <br>
+    <small class="form-text text-white">Será enviado através de: {{current_user['user']['username']}}</small><br>
+    <button class="btn btn-primary" type="submit">Enviar</button>
+</form>
+{%endblock%}

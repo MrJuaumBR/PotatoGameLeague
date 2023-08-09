@@ -4,6 +4,8 @@
 <form method="POST">
     <label for="highlight" class="form-label">Cor de sobreposição:</label><br>
     <input class="form-control" style="background: none; border: none; width: 15em;" type="color" id="highlight" name="highlight" value="{{current_user.highlight_color}}"><br>
+    <label for="gcolor" class="form-label">Cor de sobreposição 2:</label><br>
+    <input class="form-control" style="background: none; border: none; width: 15em;" type="color" id="gcolor" name="gcolor" value="{{current_user.gradient_color}}"><br>
     <label for="about" class="form-label">Sobre-mim:</label><br>
     <div class="input-group">
         <textarea class="form-control bg-dark text-white" aria-label="Sobre mim" name="about" id="about">{{current_user.aboutme}}</textarea>

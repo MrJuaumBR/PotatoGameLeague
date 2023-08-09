@@ -36,7 +36,9 @@
         var xxx = document.getElementsByClassName('OUserColor');
         for (var ele of xxx){
             if (ele.tagName == "DIV"){
+                ele.style.backgroundImage = "linear-gradient({{user.highlight_color}},{{user.gradient_color}})"
                 ele.style.backgroundColor = "{{user.highlight_color}}";
+                ele.style.borderColor = "{{user.highlight_color}}";
             }else{
                 ele.style.color = "{{user.highlight_color}}";
             }
