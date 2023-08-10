@@ -10,8 +10,18 @@
     <br>
     <div style="box-shadow: 0.25em 0.25em 0.1em black; margin-right: 1em; bottom: 1%;" class="bg-dark">
         <br>
-        <img src="{{user.user['avatar_url']}}" width="64" height="64" style="border-radius: 25%;">
+        <img src="{{user.user['avatar_url']}}" width="96" height="96" style="border-radius: 100%;">
         <h2>{{user.user['username']}}</h2>
+        <span onclick="OverlayOpen('/flwrs.html','fl')" style="font-size: 0.8em;">{{user.followers|get_len}} Seguidores</span><br>
+        {% if current_user and not current_user.id == user.id %}
+            <form method="post">
+                {% if not current_user.id in user.followers %}
+                    <button name="follow" type="submit" class="btn btn-success" style="font-size: 0.7em;">Seguir</button><br>
+                {% else %}
+                    <button name="unfollow" type="submit" class="btn btn-danger" style="font-size: 0.7em;">Deixar de seguir</button><br>
+                {%endif%}
+            </form>
+        {%endif%}
         <small style="font-size: 0.75em;">ID: {{user.user['id']}}</small><br>
         <div style="border: 0.1em solid black; background-color: rgba(0,0,0,0.1); margin: 1em;">
             <small>Sobre mim:</small><br>
@@ -19,17 +29,22 @@
                 {{user.aboutme}}
             </div>
         </div>
-        <div style="border: 0.1em solid black; background-color: rgba(0,0,0,0.1); margin: 1em;">
-            <small>Links deste Usuário:</small>
-            <ul style="color: #fff;">
-                {% for url in user.links.keys() %}
-                    <li><a class="OUserColor" href="{{user.links[url]['url']}}"><i class="{{user.links[url]['type']}}"></i>{{user.links[url]['title']}}</a></li>
-                {%endfor%}
-            </ul>
-        </div>
+        {%if user.links|get_len > 0 %}
+            <div style="border: 0.1em solid black; background-color: rgba(0,0,0,0.1); margin: 1em;">
+                <small>Links deste Usuário:</small>
+                <ul style="color: #fff;">
+                    {% for url in user.links.keys() %}
+                        <li><a class="OUserColor" href="{{user.links[url]['url']}}"><i class="{{user.links[url]['type']}}"></i>{{user.links[url]['title']}}</a></li>
+                    {%endfor%}
+                </ul>
+            </div>
+        {%endif%}
         <br>
     </div>
     <br>
+</div>
+<div id="overlay-fl" class="overlay">
+    {% include './loadable/followers.html' %}
 </div>
 <script>
     function updatecolor(){

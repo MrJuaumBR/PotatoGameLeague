@@ -1,0 +1,19 @@
+<div class="menu">
+    <div class="head">
+        <div class="h-content">
+            <small>Seguidores</small>
+            <button onclick="hideOverlay('overlay-fl')" class="btn text-white bg-dark">Fechar</button>
+        </div>
+    </div>
+    <h3>Seguidores</h3>
+    <ul id="followers-list">
+        {% for follower in user.followers %}
+            {% set f = database.get('users',follower)[1]|jineval%}
+            <li>
+                <div class="text-white" style="background-image: linear-gradient({{current_user.highlight_color}},{{user.gradient_color}}); margin: 1em;">
+                    <a href="/u?id={{f.id}}" class="text-white"><img width="32" style="border-radius: 100%;" height="32" src="{{f['user']['avatar_url']}}">{{f['user']['username']}}</a>
+                </div>
+            </li>
+        {%endfor%}
+    </ul>
+</div>

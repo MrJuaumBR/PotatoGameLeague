@@ -8,10 +8,9 @@ def home():
         current_user.loadAccessToken(session.get("token"))
     posts = []
     if 'order_by' in request.args:
-        posts = PostFilterTags(int(request.args['order_by']))
+        posts = PostFilter(int(request.args['order_by']))
     else:
-        d = dataManager()
-        posts = d.getAll('post')
+        posts = dataManager().getAll('post')
     break_line = 1
     p = []
     line = []
@@ -109,7 +108,7 @@ def create():
                 "whounlike":[]
             }
             if len(title) > 3 and len(title) < 255:
-                if len(content) > 7 and len(content) < 30000:
+                if len(content) > 7 and len(content) < 17500:
                     post['title'] = title
                     post['content'] = content
                     if len(str(tags)) == 1:
@@ -123,7 +122,7 @@ def create():
                     flash('Postagem criada!')
                     return redirect('/')
                 else:
-                    flash('O Conteúdo da sua postagem deve ter no minímo 7 caracteres e no máximo 30000 caracteres.','warning')
+                    flash('O Conteúdo da sua postagem deve ter no minímo 7 caracteres e no máximo 17500 caracteres.','warning')
             else:
                 flash('O Título da sua postagem deve ter no minímo 3 caracteres e no máximo 255 caracteres.','warning')
         return render_template('create.html',current_user=current_user,database=dataManager())
@@ -167,11 +166,45 @@ def admin():
                 sender = User(id=suggest['authorId'])
                 sender.notifications.append({'id':len(sender.notifications)+1,'date':datetime.now().strftime(DB_DATETIME_STR),'message':"Sua sugestão foi rejeitada.",'type':'danger'})
                 d.update('users',["data"],[str(sender.__dict__)],sender.id)
-                
+            elif 'new-c' in request.form:
+                newData = {
+                    'authorId':current_user.id,
+                    'content':'',
+                    'date':datetime.now().strftime(DB_DATETIME_STR)
+                }
+                newData['content']=request.form.get('new-cont')
+                d.insert('news',DB_NEWS_TABLE_COLUMN[1:],[str(newData)])
+                flash('Notícia criada!','info')
+            elif 'user-sadm' in request.form:
+                userId = request.form.get('users')
+                user = eval(d.get('users',userId)[1])
+                if not user['admin']:
+                    user['admin'] = True
+                    user['notifications'].append({'id':len(user['notifications'])+1,'date':datetime.now().strftime(DB_DATETIME_STR),'message':"Você se tornou Administrador.",'type':'success'})
+                    d.update('users',DB_USERS_TABLE_COLUMNS[1:],[str(user)],userId)
+                    flash('Usuario agora é administrador','info')
+                else:
+                    flash('Este usuario ja era administrador','danger')
+
         return render_template('admin.html',current_user=current_user,database=dataManager())
     else:
         flash('Você tem que estar logado e ser administrador','warning')
         return redirect('/')
+
+@app.route('/news',methods=['post','get'])
+def news():
+    current_user = None
+    if "token" in session:
+        current_user = User()
+        current_user.loadAccessToken(session.get("token"))
+        if current_user.admin:
+            if request.method == "POST":
+                print('1')
+                if 'delete' in request.form:
+                    print('2')
+                    print(request.form.get('delete'))
+                    dataManager().delete('news',request.form.get('delete'))
+    return render_template('news.html',current_user=current_user, database=dataManager())
 
 @app.route("/oauth/callback")
 def callback():
@@ -205,7 +238,7 @@ def logout():
         session.clear()
         return redirect("/")
 
-@app.route("/u")
+@app.route("/u",methods=["post",'get'])
 def user():
     userId = request.args["id"]
     d = dataManager()
@@ -216,10 +249,23 @@ def user():
     if "token" in session:
         current_user = User()
         current_user.loadAccessToken(session.get("token"))
-        if str(userId) == str(current_user.id):
-            flash('Você está visualizando seu perfil.','info')
+        if 'POST' == request.method:
+            if "follow" in request.form:
+                if not current_user.id in u.followers and not current_user.id == u.id:
+                    u.followers.append(current_user.id)
+                    current_user.folowing.append(u.id)
+                    u.notifications.append({'id':len(u.notifications)+1,'date':datetime.now().strftime(DB_DATETIME_STR),'message':f"{current_user.user['username']} Começou a te seguir",'type':'success'})
+                    dataManager().update('users',['data'],[str(u.__dict__)],u.id)
+                    dataManager().update('users',['data'],[str(current_user.__dict__)],current_user.id)
+            elif "unfollow" in request.form:
+                if current_user.id in u.followers and not current_user.id == u.id:
+                    u.followers.pop(u.followers.index(current_user.id))
+                    current_user.folowing.pop(current_user.folowing.index(current_user.id))
+                    u.notifications.append({'id':len(u.notifications)+1,'date':datetime.now().strftime(DB_DATETIME_STR),'message':f"{current_user.user['username']} Deixou de te seguir",'type':'danger'})
+                    dataManager().update('users',['data'],[str(u.__dict__)],u.id)
+                    dataManager().update('users',['data'],[str(current_user.__dict__)],current_user.id)
 
-    return render_template("user.html", current_user=current_user, user=u)
+    return render_template("user.html", current_user=current_user, user=u,database=dataManager())
 
 @app.route("/config", methods=["POST", "get"])
 def config():
@@ -358,6 +404,12 @@ def rdm():
 def notify():
     f = open('./pages/loadable/notify.html','rb').read()
     return f
+
+@app.route('/flwrs.html')
+def flwrs():
+    f = open('./pages/loadable/followers.html','rb').read()
+    return f
+
 
 if __name__ == "__main__":
     print("""

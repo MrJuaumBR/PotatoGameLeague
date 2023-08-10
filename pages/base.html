@@ -31,7 +31,7 @@
       <script src="../plugins/oscript.js"></script>
     </div>
   </head>  
-  <body id="body-pd" class="d-flex">
+  <body id="body-pd" style="scrollbar-color: red yellow;" class="d-flex">
     <div id="background-details" style="width: 100%; height: 100%; top: 0; left: 0;"></div>
     <header class="header bg-dark text-white" id="header">
         <hr class="color-changeable d-flex d-flex-hr" style="top: -0.55em; height: 0.1em; width: 100%; position: absolute;">
@@ -48,12 +48,10 @@
                 <a href="/" class="nav_link text-white"><i class="fa-solid fa-house"></i><span class="nav_name">Home</span></a>
                 {%if current_user %}
                     <a href="{{url_for('create')}}" class="nav_link text-white"><i class="fa-solid fa-circle-plus"></i><span class="nav_name">Criar</span></a>
-                    {% if current_user.admin %}
-                            <a href="{{url_for('admin')}}" class="nav_link text-white"><i class="fa-solid fa-hammer"></i><span class="nav_name">Admin</span></a>
-                    {%endif%}
                 {% endif %}
                 <a href="#" class="nav_link text-white" onclick="OverlayOpen('/about.html')"><i class="fa-solid fa-circle-exclamation"></i><span class="nav_name">Sobre-nós</span></a>
                 <a href="#" class="nav_link text-white" onclick="OverlayOpen('/readme_viewer.html')"><i class="fa-solid fa-file-lines"></i><span class="nav_name">Readme.md</span></a>
+                <a href="/news" class="nav_link text-white"><i class="fa-regular fa-newspaper"></i>Notícias</a>
                 {% if not current_user %}
                         <a href="" class="nav_link text-white" id="login-discord"><i class="fa-solid fa-right-to-bracket"></i><span class="nav_name">Log-in</span></a>
                 {%endif%}
@@ -67,6 +65,9 @@
                         <strong>{{current_user.user.username}}</strong>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+                          {% if current_user.admin %}
+                            <li><a href="{{url_for('admin')}}" class="dropdown-item"><i class="fa-solid fa-hammer"></i><span class="nav_name">Admin</span></a></li>
+                          {%endif%}
                         <li>
                             <a href="/u?id={{current_user.user['id']}}" class="dropdown-item"><i class="fa-solid fa-user"></i>Meu Perfil</a>
                         </li>
@@ -153,4 +154,10 @@
       }
     </script>
   </body>
+  <script>
+    // Change Scrollbar color
+    //$("#body-pd").style.
+    document.documentElement.style.setProperty('--scrollbarBG','dark');
+    document.documentElement.style.setProperty('--thumbBG','{{current_user.highlight_color}}');
+  </script>
 </html>

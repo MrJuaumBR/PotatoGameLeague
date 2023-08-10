@@ -1,0 +1,25 @@
+{%extends 'base.html'%}{%block title%}Notícias{%endblock%}
+{%block content%}
+<div class="bg-dark text-white">
+    <h1>Notícias</h1>
+    <ul>
+        {% for new in database.getAll("news") %}
+            <li>
+                {% set data = new[1]|jineval %}
+                <div style="font-size: 0.8em;">
+                    {{data['content']}}
+                    {% set author = (database.get('users',data['authorId'])[1]|jineval)%}
+                    <br>
+                    <a href="/u?id={{author.id}}">Por: <img width="16" height="16" style="border-radius: 100%;" src="{{author['user']['avatar_url']}}">{{author['user']['username']}}</a><br>
+                    <span style="font-size: 0.7em;">{{data['date']}}</span>
+                    {% if current_user.admin %}
+                        <form method="post">
+                            <br><button type="submit" name="delete" value="{{new[0]}}" style="font-size: 0.75em;" class="btn btn-danger">Apagar</button>
+                        </form>
+                    {%endif%}
+                </div>
+            </li>
+        {%endfor%}
+    </ul>
+</div>
+{%endblock%}

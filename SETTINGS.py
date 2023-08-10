@@ -85,7 +85,6 @@ class dataManager:
         n = ""
         for i, x in enumerate(values):
             v = x
-            print(v)
             if type(x) == str and not column:
                 v = f""""{str(x)}" """
             if i < len(values) - 1:
@@ -104,7 +103,6 @@ class dataManager:
                     n += f"{x} = {v}"
                 else:
                     n += f"{x} = {v}, "
-        print(n, "teioajsdojijaskhn")
         return str(n)
 
     def create_table(self, table_name: str, columns: list or tuple, types: list or tuple):
@@ -145,7 +143,6 @@ class dataManager:
         code = f"""
         SELECT * FROM {table}
         """
-        _all = []
         return self.cur.execute(code).fetchall()
 
     def delete(self,table:str, id:int):
@@ -165,6 +162,12 @@ class dataManager:
 
         x = repeat()
         return x
+
+    def getAllOrdered(self, table:str, orderBy):
+        code = f"""
+        SELECT * FROM {table} ORDER BY {orderBy}
+        """
+        return self.cur.execute(code).fetchall()
 
     def update(self, table: str, columns: list or tuple, values: list or tuple, id: int):
         code = f"""
@@ -200,6 +203,7 @@ class User:
         self.links = {}
         self.admin = False
         self.followers = []
+        self.folowing = []
         self.notifications = []
 
         self.start()  # Multiples Checks
@@ -280,6 +284,7 @@ class User:
                 self.notifications = []
                 self.authenticated = False
                 self.user = {}
+                self.folowing = []
                 self.id = 0
 
     def loadAccessToken(self, code):
@@ -293,6 +298,7 @@ DB_POST_TABLE_COLUMNS = ["id", "data"]
 DB_USERS_TABLE_COLUMNS = ["id", "data"]
 DB_TAGS_TABLE_COLUMNS = ['id','name']
 DB_SUGGESTIONS_TABLE_COLUMNS = ['id','data']
+DB_NEWS_TABLE_COLUMN = ['id','data']
 
 DB_DATETIME_STR = "%d/%m/%Y, %I:%M"
 
@@ -303,6 +309,8 @@ Database.create_table("users", DB_USERS_TABLE_COLUMNS, ["INTEGER PRIMARY KEY", "
 Database.create_table('tags', DB_TAGS_TABLE_COLUMNS, ["INTEGER PRIMARY KEY", "TEXT"]) # Create tags Table
 
 Database.create_table('suggestions', DB_SUGGESTIONS_TABLE_COLUMNS,["INTEGER PRIMARY KEY", "TEXT"]) # Create suggestions table
+
+Database.create_table('news', DB_NEWS_TABLE_COLUMN, ["INTEGER PRIMARY KEY", "TEXT"]) # Create News Table
 
 def PostFilterTags(tag:int):
     d = dataManager()
@@ -321,3 +329,26 @@ def PostFilterTags(tag:int):
             return None # Sem posts
     else:
         return False # Sem tag
+
+def PostFilter(OrderId:int):
+    d = dataManager()
+    if OrderId == 0:
+        l = d.getAll('post')
+        x = []
+        for post in sorted(l,key=lambda post: datetime.strptime(eval(post[1])['date'],DB_DATETIME_STR),reverse=True):
+            x.append(post)
+        return x
+    elif OrderId == 1:
+        l = d.getAll('post')
+        x = []
+        for post in sorted(l,key=lambda post: int(len(eval(post[1])['wholike'])),reverse=True):
+            x.append(post)
+        return x
+    elif OrderId == 2:
+        l = d.getAll('post')
+        x = []
+        for post in sorted(l,key=lambda post: datetime.strptime(eval(post[1])['date'],DB_DATETIME_STR)):
+            x.append(post)
+        return x
+    else:
+        return d.getAll('post')

@@ -9,6 +9,7 @@
             <span class="btn btn-primary" data-idvalue="user" onclick="showDiv(this)">Usuarios</span>
             <span class="btn btn-primary" data-idvalue="status" onclick="showDiv(this)">Status</span>
             <span class="btn btn-primary" data-idvalue="sugges" onclick="showDiv(this)">Sugestões</span>
+            <span class="btn btn-primary" data-idvalue="news" onclick="showDiv(this)">Notícias</span>
         </div>
         <div id="tags-control" hidden>
             <h3>Tags:</h3>
@@ -29,24 +30,44 @@
                 <button type="submit" name="tag-c" class="btn btn-secondary">Criar Tag</button>
                 <br>
             </div>
-            <script>
-                function tagChanged(){
-                    let tags = document.getElementById('tags');
-                    let d = document.getElementById('tag-interact');
-                    if (tags && tags.value){
-                        d.hidden = false;
-                    }else{
-                        d.hidden = true;
-                    };
-                }
-                $(document).ready(function(){
-                    $("#tags").select2();
-                });
-            </script>
         </div>
         <div id="user-control" hidden>
             <h3>Usuarios:</h3>
+            <select class="form-control text-black" id="users" name="users" onchange="userChanged()">
+                <option value="" class="text-black">Selecione um Usuario</option>
+                {% for user in database.getAll('users') %}
+                    <option value="{{user[0]}}" class="text-black">{{(user[1]|jineval)['user']['username']}}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <div id="user-interact" hidden>
+                <button class="btn btn-secondary" type="submit" name="user-sadm">Promover a Administrador</button>
+            </div>
         </div>
+        <script>
+            function tagChanged(){
+                let tags = document.getElementById('tags');
+                let d = document.getElementById('tag-interact');
+                if (tags && tags.value){
+                    d.hidden = false;
+                }else{
+                    d.hidden = true;
+                };
+            }
+            function userChanged(){
+                let users = document.getElementById('users');
+                let dd = document.getElementById('user-interact');
+                if (users && users.value){
+                    dd.hidden = false;
+                }else{
+                    dd.hidden = true;
+                };
+            }
+            $(document).ready(function(){
+                $("#tags").select2();
+                $("#users").select2();
+            });
+        </script>
         <div id="status-control" hidden>
             <h3>Status:</h3>
             <h4>
@@ -87,6 +108,12 @@
                     {% endfor %}
                 </ol>
             </div>
+        </div>
+        <div id="news-control" hidden>
+            <h3>Notícias</h3>
+            <small>Criar</small>
+            <textarea class="form-control" name="new-cont"></textarea><br>
+            <button class="btn btn-success" type="submit" name="new-c">Criar</button>
         </div>
         <script>
             function showDiv(button){

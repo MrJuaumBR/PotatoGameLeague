@@ -1,13 +1,27 @@
-<div>
+<div id="editor-bg">
   <style>
       /*body {
           font-family: Arial, sans-serif;
       }*/
 
       #editor {
-      border: 1px solid #ccc;
-      min-height: 200px;
-      padding: 10px;
+        transition:all 0.5s;
+        border: 1px solid #DDDDDD;
+        width:100% !important;
+        resize: vertical;
+        min-height: 10em;
+        max-height: 40em;
+        overflow-y: scroll;
+      }
+
+      .textarea_danger{
+        border:2px solid red !important;
+      }
+
+      #editor:focus{
+        box-shadow:none;
+        outline:none;
+        border:2px solid blue;
       }
 
       #toolbar {
@@ -20,7 +34,18 @@
       }
 
   </style>
-  <div id="editor" contenteditable="true" onblur="updateRte()" onfocus="updateRte()"></div>
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-12 d-flex justify-content-center">
+        <div id="editor" contenteditable="true" onblur="updateRte()" onkeyup="validate()" onkeydown="validate()" onfocus="updateRte()"></div>
+      </div>
+    </div>
+    <div class="d-flex justify-content-center">
+      <span id="char" class="d-none">
+        Letras: <span id="charc"></span>
+      </span>
+    </div>
+  </div>
   <div id="toolbar">
     <span class="btn btn-secondary" onclick="executeCommand('bold')"><b>B</b></span>
     <span class="btn btn-secondary" onclick="executeCommand('italic')"><i>I</i></span>
@@ -35,8 +60,8 @@
       <option value="2">H5</option>
       <option value="1">H6</option>
     </select>
-    <input type="color" onchange="executeCommand('foreColor', this.value)">
     <textarea id="rte-content" name="rte-content" hidden></textarea>
+    <input type="color" onchange="executeCommand('foreColor', this.value)">
   </div>
   <script>
       function executeCommand(command, value = null) {
@@ -54,6 +79,29 @@
       
       function updateRte(){
         document.getElementById('rte-content').value = document.getElementById('editor').textContent;
+      }
+
+      function validate(){
+        updateRte()
+        const areatextarea = document.querySelector("#editor");
+        const areatext = document.querySelector("#rte-content").value.length;
+        const textcount = document.querySelector("#charc");
+        const wordcount = document.querySelector("#char");
+        textcount.innerHTML = areatext;
+        
+        if(areatext > Number(document.getElementById('editor-bg').parentElement.dataset.maxchar)){
+            textcount.classList.add("text-danger");
+            areatextarea.classList.add("textarea_danger");
+        }else{
+            textcount.classList.remove("text-danger");
+            areatextarea.classList.remove("textarea_danger");
+        }
+        
+        if(areatext < 1){
+            wordcount.classList.add("d-none");
+        }else{
+            wordcount.classList.remove("d-none");
+        }
       }
   </script>
 </div>

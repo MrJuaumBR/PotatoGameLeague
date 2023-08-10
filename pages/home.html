@@ -3,16 +3,52 @@
 <h1>Bem-vindo!</h1>
 <hr>
 <h3>Últimas Postagens: <br>
-    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-content" aria-expanded="false" aria-controls="collapse-content"><i class="fa-solid fa-bars"></i></button>
+    <div>
+      <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-content" aria-expanded="false" aria-controls="collapse-content"><i class="fa-solid fa-bars"></i></button>
+      <select id="orderBy" class="form-control" onchange="order_by(this)" style="width: 9em; display: inline-block;" name="orderBy">
+        <option value="0" selected>Mais Recente</option>
+        <option value="1" >Mais popular</option>
+        <option value="2" >Mais Antigo</option>
+      </select>
+    </div>
 </h3>
 <br>
 <div id="collapse-content" class="collapse" style="width: 100%;">
     <hr>
     <div class="container">
-      
       <div id="posts" style="width: 100%;">
         {% include '/loadable/post_show.html' %}
       </div>
     </div>
 </div>
+<script>
+  function encodeQueryData(data) {
+   const ret = [];
+   for (let d in data)
+     ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+   return ret.join('&');
+  }
+  function order_by(select){
+    var value = select.value;
+    const url = new URL(document.location.href);
+    const URLParams = new URLSearchParams(url.search);
+
+    //URLParams.set();
+    url.searchParams.set('order_by',value)
+    document.location.href = url;
+    // if (!URLParams.has('order_by')){
+    //   URLParams.append('order_by',value);
+    //   document.location.href
+    // }else{
+      
+    // }
+  }
+  function checkParams(){
+    const URLParams = new URL(document.location.href).searchParams;
+    if (URLParams.has('order_by')){
+      document.getElementById('orderBy').value = URLParams.get('order_by');
+    }
+  }
+  checkParams()
+</script>
 {%endblock%}
