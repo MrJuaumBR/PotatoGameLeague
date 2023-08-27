@@ -1,0 +1,25 @@
+{%extends 'base.html'%}{%block title%}Sugestões{%endblock%}
+{%block content%}
+<h1>Veja as Sugestões!</h1>
+<div>
+    <a href="/suggest">Crie um sugestão.</a>
+</div>
+<form method="post">
+    <ol>
+        {% for sug in database.getAll('suggestions') %}
+            {% set x = sug[1]|jineval %}
+            <li>
+                <h3>Autor: <a href="/u?id={{x['authorId']}}">{{(database.get('users',x['authorId'])[1]|jineval)['user']['username']}}</a></h3>
+                <small>{{x['content']}}</small><br>
+                <span style="color: aqua;">Votos: {{(x['wholiked']|get_len)-(x['whounliked']|get_len)}}</span>
+                {%if current_user%}
+                    <div>
+                        <button class="btn btn-success" type="submit" name="+" value="{{sug[0]}}"><i class="fa-regular fa-thumbs-up"></i></button>
+                        <button class="btn btn-danger" type="submit" name="-" value="{{sug[0]}}"><i class="fa-regular fa-thumbs-down"></i></button>
+                    </div>
+                {%endif%}
+            </li>
+        {%endfor%}
+    </ol>
+</form>
+{%endblock%}

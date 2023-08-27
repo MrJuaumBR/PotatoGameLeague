@@ -1,18 +1,35 @@
 from flask import Flask, redirect, url_for, render_template, request, session, flash, render_template_string
-from jinja2 import pass_context, Template, filters
-from markupsafe import Markup
+from jinja2 import filters
+from flask_mail import Mail, Message
+
 
 from urllib import parse
 from zenora import APIClient
-from os import environ, path, mkdir
+from os import path, mkdir
 import sqlite3 as sql
-import json
 from datetime import datetime
-import zlib
+from json import loads
+import requests
+
+from data.plugins.pyEncrypt import pyEncrypt
+
+pye = pyEncrypt(True,'./data/')
 
 app = Flask(__name__, "/", "./static")
 app.template_folder = "pages"
 app.static_folder = "static"
+
+environ = loads(open('./data/values.json','rb').read())
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = pye.deencrypt(environ['EMAILU_SECRET'])
+app.config['MAIL_PASSWORD'] = pye.deencrypt(environ['EMAILP_SECRET'])
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_DEFAULT_SENDER'] = (f"Default: {pye.deencrypt(environ['EMAILU_SECRET'])}",pye.deencrypt(environ['EMAILU_SECRET']))
+mail = Mail(app)
+
+WEBHOOK_SUGGESTIONS = pye.deencrypt(environ['WEBHOOK_SUGGESTION'])
 
 # Evaluation
 def jineval(need_eval):
@@ -46,11 +63,11 @@ if not path.exists('./data'):
 
 SITE_URL = "http://localhost:5000"
 
-CLIENT_SECRET = environ["CLIENT_SECRET"]
+CLIENT_SECRET = pye.deencrypt(environ["CLIENT_SECRET"])
 
-app.config["SECRET_KEY"] = environ["SECRET_KEY"]
+app.config["SECRET_KEY"] = pye.deencrypt(environ["SECRET_KEY"])
 
-TOKEN = environ["TOKEN"]
+TOKEN = pye.deencrypt(environ["TOKEN"])
 REDIRECT_URL = str(SITE_URL) + "/oauth/callback"
 OAUTH_URL = f"https://discord.com/api/oauth2/authorize?client_id=1043495092977152061&redirect_uri={parse.quote(REDIRECT_URL)}&response_type=code&scope=identify%20email%20connections%20guilds"
 
@@ -208,7 +225,7 @@ class User:
 
         self.start()  # Multiples Checks
 
-    def checkIntegrity(self,val):
+    def checkIntegrity(self,val) -> dict:
         val2 = val
         for key in User(defaulter=True).__dict__.keys():
             if not key in val.keys():
@@ -227,7 +244,7 @@ class User:
                     val2[key] = x
         return val2
 
-    def getMeInDatabase(self):
+    def getMeInDatabase(self) -> dict:
         d = dataManager()
         # Get User in Database
         user = d.is_registered(
@@ -241,20 +258,64 @@ class User:
     def loadLocalDatabase(self):
         x = self.getMeInDatabase()
         y = self.checkIntegrity(x) # Check integrity
-        self.__dict__ = y
-        # self.highlight_color = x['highlight_color']
-        # self.aboutme = x['aboutme']
-        # self.links = x['links']
+        me = {}
+        for v in y.keys():
+            if v.lower() != "access_token":
+               me[v] = y[v]
+        me['access_token'] = self.access_token
+        self.__dict__ = me # Reload
+
+    def OwnUserDictUpdate(self,bearer_client) -> dict:
+        dc = ConvertOwnUserToDict(bearer_client.users.get_current_user())
+        self.id = dc['id']
+        me1 = self.getMeInDatabase()
+        if 'user' in me1.keys():
+            me = me1['user']
+        else:
+            me = dc
+        changed = False
+        for key in dc.keys():
+            if key in me.keys():
+                if dc[key] != me[key]:
+                    changed = True
+                    print('Change')
+                    me[key] = dc[key]
+            else:
+                me[key] = dc[key]
+
+        if changed:
+            user_u = self.__dict__
+            user_u['user'] = me
+            dataManager().update('users',['data'], [str(user_u)],self.id)
+            print("Changes Saved.")
+        else:
+            if not 'user' in me1.keys(): # fix
+                user_u = self.__dict__
+                user_u['user'] = me
+                dataManager().update('users',['data'], [str(user_u)],self.id)
+                print("Sample fix.")
+            else:
+                self.user = dc
+                print("Nothing to change.")
+
+        return me
+
+    def setAdm(self):
+        if int(self.id) in eval(pye.deencrypt(environ['ADMINS_ID'])):
+            self.admin = True
+            dataManager().update('users',['data'],[str(self.__dict__)],self.id)
 
     def start(self):
         if self.access_token:
-            bearer_client = APIClient(self.access_token, bearer=True)
-            self.user = ConvertOwnUserToDict(bearer_client.users.get_current_user())
+            try:
+                bearer_client = APIClient(self.access_token, bearer=True)
+                self.OwnUserDictUpdate(bearer_client)
+            except Exception as ex:
+                print("Can't get B Client")
+                raise(ex)
 
-            self.authenticated = False
-            self.id = self.user["id"]
-            if int(self.id) in eval(environ['ADMINS_ID']):
-                self.admin = True
+            self.authenticated = True
+            self.setAdm()
             
             self.loadLocalDatabase()
             if not (self.access_token in ["", " ", None, "None"]):
@@ -273,6 +334,7 @@ class User:
         else:
             if self.id:
                 self.loadLocalDatabase()
+                self.setAdm()
             elif self.defaulter:
                 self.defaulter = False
                 self.aboutme = ""
@@ -286,6 +348,8 @@ class User:
                 self.user = {}
                 self.folowing = []
                 self.id = 0
+                self.recv_emails_news = False
+                self.recv_emails_noti = False
 
     def loadAccessToken(self, code):
         self.access_token = code

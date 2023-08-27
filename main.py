@@ -1,4 +1,5 @@
 from SETTINGS import *
+from discord import SyncWebhook, Embed
 
 @app.route("/")
 def home():
@@ -6,6 +7,7 @@ def home():
     if "token" in session:
         current_user = User()
         current_user.loadAccessToken(session.get("token"))
+    print(current_user)
     posts = []
     if 'order_by' in request.args:
         posts = PostFilter(int(request.args['order_by']))
@@ -129,7 +131,20 @@ def create():
     else:
         flash('Precisa estar logado.','danger')
         return redirect('/')
-    
+
+@app.route('/edit',methods=["POST","GET"])
+def edit():
+    current_user = None
+    if "token" in session:
+        current_user = User()
+        current_user.loadAccessToken(session.get("token"))
+    if 'pId' in request.args:
+        post = eval(dataManager().get('post',request.args['pId'])[1])
+        if current_user and current_user.id == post['autorId']:
+            return render_template('edit.html',current_user=current_user,post=post,database=dataManager())
+    else:
+        return redirect('/err?err=No%20Post%20Id')
+
 @app.route('/admin',methods=['POST','GET'])
 def admin():
     current_user = None
@@ -174,6 +189,15 @@ def admin():
                 }
                 newData['content']=request.form.get('new-cont')
                 d.insert('news',DB_NEWS_TABLE_COLUMN[1:],[str(newData)])
+                emb = Embed(
+                    title="Nova Notícia!",
+                    description=f"Nova notícia! caso queira ver, clique [aqui]({SITE_URL}/news)",
+                    color=0x0F23EC,
+                    timestamp=datetime.now()
+                )
+                emb.set_author(name=current_user.user['username'],icon_url=current_user.user['avatar_url'])
+                webhook = SyncWebhook.from_url(WEBHOOK_SUGGESTIONS)
+                webhook.send(embed=emb)
                 flash('Notícia criada!','info')
             elif 'user-sadm' in request.form:
                 userId = request.form.get('users')
@@ -185,7 +209,10 @@ def admin():
                     flash('Usuario agora é administrador','info')
                 else:
                     flash('Este usuario ja era administrador','danger')
-
+            else:
+                pass
+        else:
+            pass
         return render_template('admin.html',current_user=current_user,database=dataManager())
     else:
         flash('Você tem que estar logado e ser administrador','warning')
@@ -199,22 +226,20 @@ def news():
         current_user.loadAccessToken(session.get("token"))
         if current_user.admin:
             if request.method == "POST":
-                print('1')
                 if 'delete' in request.form:
-                    print('2')
-                    print(request.form.get('delete'))
                     dataManager().delete('news',request.form.get('delete'))
     return render_template('news.html',current_user=current_user, database=dataManager())
 
 @app.route("/oauth/callback")
 def callback():
+    d = dataManager()
     try:
         current_user = User(request.args["code"])
     except Exception as err:
         print(err)
         return redirect(f'/err?err={err}')
+    
     session["token"] = current_user.access_token
-    d = dataManager()
     if d.get("users", current_user.user["id"]):
         # Update
         d.update(
@@ -230,12 +255,18 @@ def callback():
                 [current_user.user["id"], str(current_user.__dict__)],
             ),
         )
+    if current_user:
+        msg = Message(subject='Olá!',recipients=[current_user.user['email']])
+        msg.body = "Você fez login em sua conta hoje? se não recomendamos fortemente que altere sua senha no Discord. Caso tenha sido você, Seja bem-vindo(a)!"
+        mail.send(msg)
     return redirect("/")
 
 @app.route("/logout")
 def logout():
     if "token" in session:
         session.clear()
+        return redirect("/")
+    else:
         return redirect("/")
 
 @app.route("/u",methods=["post",'get'])
@@ -273,11 +304,14 @@ def config():
     if "token" in session:
         current_user = User()
         current_user.loadAccessToken(session.get("token"))
+    
     if current_user and request.method == "POST":
         color = request.form.get("highlight")  # Highlight color
         color2 = request.form.get('gcolor') # Gradient color 2
         about = request.form.get("about")  # About
         urls = request.form.get('url_index') # get urls
+        news_email = request.form.get('news-email')
+        noti_email = request.form.get('noti-email')
         urlsDict = {}
         if type(urls) != int:
             if urls in ["0","",None," "]:
@@ -302,7 +336,17 @@ def config():
         current_user.gradient_color = color2
         current_user.aboutme = about
         current_user.links = urlsDict
-        
+        if news_email == "on":
+            news_email = True
+        else:
+            news_email = False
+        if noti_email == "on":
+            noti_email = True
+        else:
+            noti_email = False
+        current_user.recv_emails_news = news_email
+        current_user.recv_emails_noti = noti_email
+
         d.update('users',DB_USERS_TABLE_COLUMNS[1:],(str(current_user.__dict__),),current_user.id) # update in database
     return render_template("config.html", current_user=current_user)
 
@@ -318,16 +362,76 @@ def suggest():
                 data  = {
                     'content':"",
                     'authorId':0,
-                    'date':""
+                    'date':"",
+                    'wholiked':[],
+                    'whounliked':[]
                 }
                 data['content'] = content
                 data['date'] = datetime.now().strftime(DB_DATETIME_STR)
                 data['authorId'] = current_user.id
                 dataManager().insert('suggestions',DB_SUGGESTIONS_TABLE_COLUMNS[1:],[str(data)])
                 flash('Sua Sugestão foi enviado com sucesso','sucess')
+                emb = Embed(
+                    title="Nova Sugestão!",
+                    description=data['content'],
+                    color=0xECE40F,
+                    timestamp=datetime.now()
+                )
+                emb.set_author(name=current_user.user['username'],icon_url=current_user.user['avatar_url'])
+                webhook = SyncWebhook.from_url(WEBHOOK_SUGGESTIONS)
+                webhook.send(embed=emb)
                 return redirect('/')
             return render_template('sugest.html',current_user=current_user)
 
+@app.route('/suggestions',methods=["POST","GET"])
+def suggestions():
+    current_user = None
+    if "token" in session:
+        current_user = User()
+        current_user.loadAccessToken(session.get("token"))
+        if request.method == "POST":
+            d = dataManager()
+            if '+' in request.form:
+                sug = dataManager().get('suggestions',int(request.form.get('+')))
+                data = eval(sug[1])
+                if current_user.id in data['whounliked']:
+                    data['whounliked'].pop(data['whounliked'].index(current_user.id))
+                    data['wholiked'].append(current_user.id)
+                    d.update('suggestions',['data',],[str(data),],sug[0])
+                elif current_user.id in data['wholiked']:
+                    data['wholiked'].pop(data['wholiked'].index(current_user.id))
+                    d.update('suggestions',['data',],[str(data),],sug[0])
+                else:
+                    data['wholiked'].append(current_user.id)
+                    d.update('suggestions',['data',],[str(data),],sug[0])
+            elif '-' in request.form:
+                sug = dataManager().get('suggestions',int(request.form.get('-')))
+                data = eval(sug[1])
+                if current_user.id in data['wholiked']:
+                    data['wholiked'].pop(data['wholiked'].index(current_user.id))
+                    data['whounliked'].append(current_user.id)
+                    d.update('suggestions',['data',],[str(data),],sug[0])
+                elif current_user.id in data['whounliked']:
+                    data['whounliked'].pop(data['whounliked'].index(current_user.id))
+                    d.update('suggestions',['data',],[str(data),],sug[0])
+                else:
+                    data['whounliked'].append(current_user.id)
+                    d.update('suggestions',['data',],[str(data),],sug[0])
+
+
+    return render_template('suggestions.html',current_user=current_user,database=dataManager())
+
+@app.route('/encrypt',methods=["POST","GET"])
+def encrypt():
+    current_user = None
+    if "token" in session:
+        current_user = User()
+        current_user.loadAccessToken(session.get("token"))
+    if request.method == "POST":
+        con = request.form.get('content')
+        con = pye.encrypt(str(con))
+        return render_template('encrypt.html',current_user=current_user,content=con)
+    return render_template('encrypt.html',current_user=current_user,content="")
 #others
 @app.route('/err')
 def error():
@@ -418,4 +522,12 @@ if __name__ == "__main__":
     - http://localhost:5000
     \n\n
     """)
+    dcemb = Embed(
+        title="O Site Está ONLINE!",
+        description="PGL: O site está online! <:9110zeropeace:1016329175218540604>",
+        colour=0x32CE0A,
+        timestamp=datetime.now()
+    )
+    webhook = SyncWebhook.from_url(WEBHOOK_SUGGESTIONS)
+    webhook.send(embed=dcemb)
     app.run(debug=True)

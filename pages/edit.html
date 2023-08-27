@@ -1,0 +1,45 @@
+{%extends 'base.html'%}{%block title%}Criar{%endblock%}
+{%block content%}
+<h1>Criar uma postagem</h1>
+<form method="post">
+    <script src="plugins/multiselect-dropdown.js"></script>
+    <label for="post-title" class="form-label">Título da postagem:</label>
+    <input type="text" class="form-control" name="post-title" id="post-title" value="{{post['title']}}">
+    <label for="post-tags" class="form-label">Tags da sua postagem:</label><br>
+    <select class="form-control text-black" id="post-tags" name="post-tags" multiple multiselect-search="true" onchange="changeTagList()">
+        {% for tag in database.getAll('tags') %}
+            <option class="text-black" style="color: black;" value="{{tag[0]}}" {%if tag[0] in post['tags'] %}selected{%endif%}>{{tag[1]}}</option>
+        {% endfor %}
+    </select>
+    <label for="">Conteúdo da sua postagem:</label>
+    <div id="text-editor" data-maxchar="17500">
+    </div>
+    <input id="tags-s" name="tags-s" type="text" value="[]" hidden>
+    <br>
+    <button type="submit" class="btn btn-primary" onclick="updateRte()//Update TExt editor">Enviar</button>
+    <script>
+        $("#text-editor").load('/richtexteditor.html');
+        function changeTagList(){
+            let select = document.getElementById('post-tags');
+            let updater = document.getElementById('tags-s'); // Selected tags
+            var selectReal = document.getElementById(select.id+'-select');
+            // Get Element
+            selectReal = selectReal.getElementsByClassName('multiselect-dropdown-list-wrapper')[0].getElementsByClassName('multiselect-dropdown-list')[0];
+            var checkedList = []
+            for (let x=0; x < selectReal.childElementCount; x++){
+                var ele = selectReal.children[x];
+                if (ele.classList.contains('checked')){
+                    checkedList.push(x+1);
+                };
+            }
+            updater.value = String(checkedList);
+        }
+        
+        function startUpdate(){
+            document.getElementById('editor').nodeValue = "{{post['content']}}";
+            changeTagList();
+        };
+        startUpdate();
+    </script>
+</form>
+{% endblock %}

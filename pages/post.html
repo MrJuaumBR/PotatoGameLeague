@@ -6,8 +6,9 @@
 <a href="/u?id={{author['id']}}" class="text-white"><h6><img style="width: 1.5em; height: 1.5em; border: none; border-radius: 100%;" src="{{author['user']['avatar_url']}}">{{author['user']['username']}}</h6></a>
 <div>
     <form method="post">
-        <button class="btn btn-success" name="+" style="font-size: 0.6em; display: inline-block;"><i class="fa-regular fa-thumbs-up"></i>{{post['wholike']|get_len}}</button>
-        <button class="btn btn-danger" name="-" style="font-size: 0.6em; display: inline-block;"><i class="fa-regular fa-thumbs-down"></i>{{post['whounlike']|get_len}}</button>
+        <button class="btn btn-success" name="+" style="font-size: 0.6em; display: inline-block;"><i class="fa-regular fa-thumbs-up"></i></button>
+        <span>{{(post['wholike']|get_len)-(post['whounlike']|get_len)}}</span>
+        <button class="btn btn-danger" name="-" style="font-size: 0.6em; display: inline-block;"><i class="fa-regular fa-thumbs-down"></i></button>
     </form>
 </div>
 <div>
@@ -30,7 +31,9 @@
 <div>
     {% if current_user.id == post['autorId'] or current_user.admin %}
         <a href="/d?pId={{postId}}"><button class="btn btn-danger" style="font-size: 0.6em;"><i class="fa-solid fa-trash"></i>Apagar Postagem</button></a>
-        <a href="/edit?pId={{postId}}"><button class="btn btn-info" style="font-size: 0.6em;"><i class="fa-regular fa-pen-to-square"></i>Editar Postagem</button></a>
+        {% if current_user.id == post['autorId']%}
+            <a href="/edit?pId={{postId}}" disabled><button class="btn btn-info" style="font-size: 0.6em;" disabled><i class="fa-regular fa-pen-to-square"></i>Editar Postagem</button></a>
+        {% endif %}
     {% endif %}
 </div>
 {%endblock%}

@@ -74,6 +74,7 @@
                 <i class="fa-solid fa-temperature-full"></i>Postagens: {{database.getAll('post')|get_len}}<br>
                 <i class="fa-solid fa-users"></i>Usuarios: {{database.getAll('users')|get_len}}<br>
                 <i class="fa-solid fa-hashtag"></i>Tags: {{database.getAll('tags')|get_len}}<br>
+                <i class="fa-solid fa-newspaper"></i>Notícias: {{database.getAll('news')|get_len}}<br>
                 <i class="fa-regular fa-newspaper"></i>Sugestões: {{database.getAll('suggestions')|get_len}}<br>
                 <i class="fa-solid fa-database"></i>Database size: {{database|get_db_size}}
             </h4>
@@ -101,8 +102,11 @@
                                 </div>
                                 <br>
                                 <small>{{s['date']}}</small><br>
+                                <div>
+                                    Votes: <span>{{((suge[1]|jineval)['wholiked']|get_len)-((suge[1]|jineval)['whounliked']|get_len)}}</span>
+                                </div><br>
                                 <button name="sug-d" class="btn btn-danger" value="{{s}}" onclick="`{{database.delete('suggestions',suge[0])}}`">Apagar</button>
-                                <button name="sug-c" class="btn btn-sucess" value="{{s}}" onclick="`{{database.delete('suggestions',suge[0])}}`">Concluído</button>
+                                <button name="sug-c" class="btn btn-success" value="{{s}}" onclick="`{{database.delete('suggestions',suge[0])}}`">Concluído</button>
                             </div>
                         </li>
                     {% endfor %}

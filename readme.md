@@ -29,6 +29,8 @@ __*Current*__
     - [x] New Decorations with Colors
     - [x] Scrollbar color change
 - [x] Posts System
+    - [x] Down/Up vote
+    - [x] New Count System to votes
 - [x] Rich Text Editor
 - [x] Delete Post
 - [x] Like and unlike system
@@ -36,6 +38,8 @@ __*Current*__
 - [x] Readme Viewer
 - [x] Better Sidebar
 - [x] Suggest System
+    - [x] Public
+    - [x] Down/Up Vote
 - [x] Notifications System
 - [x] Follow System
 - [x] Order system
@@ -45,10 +49,17 @@ __*Current*__
 - [x] News page
     - [x] Admin Delete
 - [x] Add Admins System
+- [x] New Encrypt system(Forced)
+    - Why did we have to do this? Because .env was having some errors.
+    - [x] Page for free use of this [here](/encrypt).
+- [x] Send webhooks to Discord
+- [x] Send Emails
+    - [ ] Newsletter subscriptions
 - [ ] Report System
 - [ ] Edit Post
 - [ ] Reload Discord Account System(Full or 1/2)
 - [ ] Comment system
+    
 
 # Fixes
 - ``requirements.txt`` Added Flask to fix

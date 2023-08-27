@@ -10,8 +10,24 @@
     <div class="input-group">
         <textarea class="form-control bg-dark text-white" aria-label="Sobre mim" name="about" id="about">{{current_user.aboutme}}</textarea>
     </div><br>
+    <label for="otheroptions">Outras Opções:</label>
+    <div class="form-control bg-dark" name="otheroptions" id="otheroptions">
+        <img src="../images/soonicon.png" width="32" height="20">
+        <div class="form-check">
+            <input class="form-check-input text-white" type="checkbox" name="news-email" id="news-email" {%if current_user.recv_emails_news %}select{%endif%} disabled>
+            <label class="form-check-label text-white" for="news-email">
+                Receber Emails de notícias
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input text-white" type="checkbox" name="noti-email" id="noti-email" disabled>
+            <label class="form-check-label text-white" for="noti-email">
+                Receber Emails de Notificações
+            </label>
+          </div>
+    </div>
     <label for="urls">Links:</label>
-    <div class="form-contro bg-dark" name="urls" id="urls">
+    <div class="form-control bg-dark" name="urls" id="urls">
         <input type="number" id="url_index" name="url_index" hidden>
         <small id="urls_enter">
             {% for url in current_user.links.keys() %}
@@ -124,6 +140,15 @@
         function UpdateReceiver(){
             document.getElementById("url_index").value = document.getElementById('urls_enter').childElementCount;
         }
+        function otheroptions(){
+            if (eval("{{current_user.recv_emails_noti}}".toLowerCase())){
+                document.getElementById('noti-email').checked = true;
+            };
+            if (eval("{{current_user.recv_emails_news}}".toLowerCase())){
+                document.getElementById('news-email').checked = true;
+            }; 
+        }
+        otheroptions()
     </script>
 </form>
 {%endblock%}

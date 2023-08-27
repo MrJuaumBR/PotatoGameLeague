@@ -1,0 +1,8 @@
+{%extends 'base.html'%}{%block title%}Sistema de criptografia{%endblock%}
+{%block content%}
+<form method="post">
+    <label for="content">Conteúdo: </label>
+    <input class="form-control" type="text" name="content" id="content" value="{{content}}">
+    <button type="submit" class="btn btn-primary">Criptografar/Decriptografar</button>
+</form>
+{%endblock%}

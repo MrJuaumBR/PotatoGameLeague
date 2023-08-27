@@ -9,8 +9,9 @@
             {%set x = database.get('users',author_id)[1]|jineval %}
             <a href="/u?id={{post[1]['autorId']}}" class="text-white"><h6>Autor: {{x['user']['username']}}</h6></a>
             <div>
-                <span class="text-white" style="font-size: 0.75em; background-color: green;"><i class="fa-regular fa-thumbs-up"></i>{{post[1]['wholike']|get_len}}</span>
-                <span class="text-white" style="font-size: 0.75em; background-color: red;"><i class="fa-regular fa-thumbs-down"></i>{{post[1]['whounlike']|get_len}}</span>
+                <span class="text-white" style="font-size: 0.75em; background-color: green;"><i class="fa-regular fa-thumbs-up"></i></span>
+                <span>{{(post[1]['wholike']|get_len)-(post['whounlike']|get_len)}}</span>
+                <span class="text-white" style="font-size: 0.75em; background-color: red;"><i class="fa-regular fa-thumbs-down"></i></span>
             </div>
             {% if post[1]['tags'] %}
                 <small>Tags:
