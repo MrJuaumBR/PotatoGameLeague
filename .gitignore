@@ -1,7 +1,8 @@
 
 # Database
 *.db
-__pycache__/
+*/__pycache__/
+*.vscode
 
 # Installer logs
 pip-log.txt
@@ -9,3 +10,4 @@ pip-delete-this-directory.txt
 
 # Vs Code
 .vscode/
+

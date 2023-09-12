@@ -222,6 +222,9 @@ class User:
         self.followers = []
         self.folowing = []
         self.notifications = []
+        
+        self.recv_emails_news = False
+        self.recv_emails_noti = False
 
         self.start()  # Multiples Checks
 

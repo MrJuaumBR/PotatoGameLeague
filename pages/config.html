@@ -14,13 +14,13 @@
     <div class="form-control bg-dark" name="otheroptions" id="otheroptions">
         <img src="../images/soonicon.png" width="32" height="20">
         <div class="form-check">
-            <input class="form-check-input text-white" type="checkbox" name="news-email" id="news-email" {%if current_user.recv_emails_news %}select{%endif%} disabled>
+            <input class="form-check-input text-white" type="checkbox" name="news-email" id="news-email" {%if current_user.recv_emails_news %}select{%endif%}>
             <label class="form-check-label text-white" for="news-email">
                 Receber Emails de notícias
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input text-white" type="checkbox" name="noti-email" id="noti-email" disabled>
+            <input class="form-check-input text-white" type="checkbox" name="noti-email" id="noti-email">
             <label class="form-check-label text-white" for="noti-email">
                 Receber Emails de Notificações
             </label>

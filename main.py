@@ -181,6 +181,10 @@ def admin():
                 sender = User(id=suggest['authorId'])
                 sender.notifications.append({'id':len(sender.notifications)+1,'date':datetime.now().strftime(DB_DATETIME_STR),'message':"Sua sugestão foi rejeitada.",'type':'danger'})
                 d.update('users',["data"],[str(sender.__dict__)],sender.id)
+                if sender.recv_emails_noti:
+                    msg = Message(subject='Nova Notificação!',recipients=[sender.user['email']])
+                    msg.body = f"Você recebeu uma nova notificação! Verifique-a aqui: {SITE_URL}"
+                    mail.send(msg)
             elif 'new-c' in request.form:
                 newData = {
                     'authorId':current_user.id,
@@ -198,6 +202,13 @@ def admin():
                 emb.set_author(name=current_user.user['username'],icon_url=current_user.user['avatar_url'])
                 webhook = SyncWebhook.from_url(WEBHOOK_SUGGESTIONS)
                 webhook.send(embed=emb)
+                users = dataManager().getAll('users')
+                for user in users:
+                    u = User(id=user[0])
+                    if u.recv_emails_noti:
+                        msg = Message(subject='Nova Notícia!',recipients=[u.user['email']])
+                        msg.body = f"Uma nova notícia saiu! verifique aqui: {SITE_URL}/news"
+                        mail.send(msg)
                 flash('Notícia criada!','info')
             elif 'user-sadm' in request.form:
                 userId = request.form.get('users')
@@ -205,6 +216,10 @@ def admin():
                 if not user['admin']:
                     user['admin'] = True
                     user['notifications'].append({'id':len(user['notifications'])+1,'date':datetime.now().strftime(DB_DATETIME_STR),'message':"Você se tornou Administrador.",'type':'success'})
+                    if user.recv_emails_noti:
+                        msg = Message(subject='Nova Notificação!',recipients=[user.user['email']])
+                        msg.body = f"Você recebeu uma nova notificação! Verifique-a aqui: {SITE_URL}"
+                        mail.send(msg)
                     d.update('users',DB_USERS_TABLE_COLUMNS[1:],[str(user)],userId)
                     flash('Usuario agora é administrador','info')
                 else:
@@ -286,6 +301,10 @@ def user():
                     u.followers.append(current_user.id)
                     current_user.folowing.append(u.id)
                     u.notifications.append({'id':len(u.notifications)+1,'date':datetime.now().strftime(DB_DATETIME_STR),'message':f"{current_user.user['username']} Começou a te seguir",'type':'success'})
+                    if u.recv_emails_noti:
+                        msg = Message(subject='Nova Notificação!',recipients=[u.user['email']])
+                        msg.body = f"Você recebeu uma nova notificação! Verifique-a aqui: {SITE_URL}"
+                        mail.send(msg)
                     dataManager().update('users',['data'],[str(u.__dict__)],u.id)
                     dataManager().update('users',['data'],[str(current_user.__dict__)],current_user.id)
             elif "unfollow" in request.form:
@@ -293,6 +312,10 @@ def user():
                     u.followers.pop(u.followers.index(current_user.id))
                     current_user.folowing.pop(current_user.folowing.index(current_user.id))
                     u.notifications.append({'id':len(u.notifications)+1,'date':datetime.now().strftime(DB_DATETIME_STR),'message':f"{current_user.user['username']} Deixou de te seguir",'type':'danger'})
+                    if u.recv_emails_noti:
+                        msg = Message(subject='Nova Notificação!',recipients=[u.user['email']])
+                        msg.body = f"Você recebeu uma nova notificação! Verifique-a aqui: {SITE_URL}"
+                        mail.send(msg)
                     dataManager().update('users',['data'],[str(u.__dict__)],u.id)
                     dataManager().update('users',['data'],[str(current_user.__dict__)],current_user.id)
 
@@ -311,6 +334,7 @@ def config():
         about = request.form.get("about")  # About
         urls = request.form.get('url_index') # get urls
         news_email = request.form.get('news-email')
+        #print(news_email)
         noti_email = request.form.get('noti-email')
         urlsDict = {}
         if type(urls) != int:
@@ -336,16 +360,16 @@ def config():
         current_user.gradient_color = color2
         current_user.aboutme = about
         current_user.links = urlsDict
-        if news_email == "on":
+        if news_email == 'on':
             news_email = True
         else:
             news_email = False
-        if noti_email == "on":
+        if noti_email == 'on':
             noti_email = True
         else:
             noti_email = False
-        current_user.recv_emails_news = news_email
-        current_user.recv_emails_noti = noti_email
+        current_user.recv_emails_news = noti_email
+        current_user.recv_emails_noti = news_email
 
         d.update('users',DB_USERS_TABLE_COLUMNS[1:],(str(current_user.__dict__),),current_user.id) # update in database
     return render_template("config.html", current_user=current_user)
