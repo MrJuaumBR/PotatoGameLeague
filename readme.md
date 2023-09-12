@@ -54,7 +54,7 @@ __*Current*__
     - [x] Page for free use of this [here](/encrypt).
 - [x] Send webhooks to Discord
 - [x] Send Emails
-    - [ ] Newsletter subscriptions
+    - [x] Newsletter subscriptions
 - [ ] Report System
 - [ ] Edit Post
 - [ ] Reload Discord Account System(Full or 1/2)
